@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class SwaggerConfig {
     @Bean
-    fun OpenAPI() : OpenAPI {
+    fun openAPI() : OpenAPI {
         val securityScheme = "Bearer Token"
 
         val securityRequirement = SecurityRequirement()
