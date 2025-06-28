@@ -67,6 +67,4 @@ class GlobalExceptionHandler {
     private fun trace(t: Throwable): String =
         StringWriter().also {t.printStackTrace(PrintWriter(it))}.toString()
 
-
-
 }
