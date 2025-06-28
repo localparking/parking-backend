@@ -38,7 +38,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation ("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
     compileOnly("org.projectlombok:lombok")
-    implementation("com.mysql:mysql-connector-j:8.4.1")
+    implementation("com.mysql:mysql-connector-j:8.4.0")
     implementation("org.hibernate.orm:hibernate-core:6.5.3.Final")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
