@@ -35,12 +35,13 @@ class OAuth2SuccessHandler(
 
         tokenService.saveRefreshToken(userId, refreshToken)
 
-        res.addHeader("Set-Cookie", CookieUtil.createRefreshTokenCookie(refreshToken).toString())
+        res.addHeader("Set-Cookie", accessToken)
+        res.addHeader("Set-Cookie", refreshToken)
 
         val redirectUrl = UriComponentsBuilder
             .fromUriString("http://localhost:3000/login/success")
             .queryParam("role", userRole)
-            .queryParam("accessToken", accessToken)
+            //.queryParam("accessToken", accessToken)
             //.queryParam("refreshToken", refreshToken)
             .build()
             .toUriString()
