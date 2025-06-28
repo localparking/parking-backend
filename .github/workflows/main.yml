@@ -79,17 +79,44 @@ jobs:
               echo "Container main-server does not exist. Skipping stop and remove."
             fi
 
+      # - name: Pull and Deploy Docker Image
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     username: ubuntu
+      #     host: ${{ secrets.LIVE_SERVER_IP }}
+      #     key: ${{ secrets.EC2_SSH_KEY }}
+      #     script_stop: true
+      #     script: |
+      #       sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}:latest
+      #       echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" > .env
+      #       sudo docker-compose --env-file .env -f docker-compose.yml up -d
       - name: Pull and Deploy Docker Image
         uses: appleboy/ssh-action@master
         with:
           username: ubuntu
           host: ${{ secrets.LIVE_SERVER_IP }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          script_stop: true
           script: |
+            # =================== 디버깅을 위한 임시 코드 ===================
+            echo "--- START DEBUG ---"
+            echo "Step 1: Checking DOCKERHUB_USERNAME..."
+            echo "Username being used: ${{ secrets.DOCKERHUB_USERNAME }}"
+            
+            echo "Step 2: Checking if DOCKERHUB_TOKEN is passed..."
+            # 토큰 자체를 출력하면 보안에 위험하므로, 토큰의 길이를 출력하여 값이 비어있는지 아닌지를 확인합니다.
+            TOKEN_LENGTH=$(echo -n "${{ secrets.DOCKERHUB_TOKEN }}" | wc -c)
+            echo "Length of the passed token: $TOKEN_LENGTH"
+            
+            # 토큰의 앞 4글자만 출력하여 올바른 토큰이 맞는지 대략적으로 확인합니다.
+            TOKEN_PREFIX=$(echo -n "${{ secrets.DOCKERHUB_TOKEN }}" | cut -c 1-4)
+            echo "Prefix of the passed token: $TOKEN_PREFIX"
+            echo "--- END DEBUG ---"
+            # =============================================================
+      
+            # 원래 로그인 및 배포 코드
+            echo ${{ secrets.DOCKERHUB_TOKEN }} | sudo docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}:latest
-            echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" > .env
-            sudo docker-compose --env-file .env -f docker-compose.yml up -d
+            KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }} sudo docker-compose -f docker-compose.yml up -d
 
             
       - name: Check Deploy Server URL
