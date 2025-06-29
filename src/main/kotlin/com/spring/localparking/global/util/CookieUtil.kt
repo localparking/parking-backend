@@ -10,19 +10,19 @@ object CookieUtil {
     fun createAccessTokenCookie(accessToken: String): ResponseCookie =
         ResponseCookie.from("accessToken", accessToken)
             .httpOnly(true)
-            .secure(true)
+            .secure(false)
             .path("/")
             .maxAge(60 * 15)
-            .sameSite("None")
+            .sameSite("Lax")
             .build()
 
     fun createRefreshTokenCookie(refreshToken: String) : ResponseCookie =
         ResponseCookie.from("refreshToken", refreshToken)
             .httpOnly(true)
-            .secure(true)
+            .secure(false)
             .path("/")
             .maxAge(REFRESH_TOKEN_EXPIRY)
-            .sameSite("None")
+            .sameSite("Lax")
             .build()
 
     fun deleteRefreshTokenCookie() : Cookie =
