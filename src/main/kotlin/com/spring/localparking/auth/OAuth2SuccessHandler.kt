@@ -41,8 +41,8 @@ class OAuth2SuccessHandler(
         val redirectUrl = UriComponentsBuilder
             .fromUriString("http://localhost:3000/login/success")
             .queryParam("role", userRole)
-            //.queryParam("accessToken", accessToken)
-            //.queryParam("refreshToken", refreshToken)
+            .queryParam("accessToken", accessToken)
+            .queryParam("refreshToken", refreshToken)
             .build()
             .toUriString()
 
