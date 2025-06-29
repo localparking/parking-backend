@@ -79,27 +79,17 @@ jobs:
               echo "Container main-server does not exist. Skipping stop and remove."
             fi
 
-      # - name: Pull and Deploy Docker Image
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     username: ubuntu
-      #     host: ${{ secrets.LIVE_SERVER_IP }}
-      #     key: ${{ secrets.EC2_SSH_KEY }}
-      #     script_stop: true
-      #     script: |
-      #       sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}:latest
-      #       echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" > .env
-      #       sudo docker-compose --env-file .env -f docker-compose.yml up -d
-      - name: Build & Push Docker Image
-        if: github.event_name == 'push'
-        uses: docker/build-push-action@v5
+      - name: Pull and Deploy Docker Image
+        uses: appleboy/ssh-action@master
         with:
-          context: .
-          platforms: linux/amd64
-          push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}:latest
-          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}:buildcache
-          cache-to:   type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}:buildcache,mode=max
+          username: ubuntu
+          host: ${{ secrets.LIVE_SERVER_IP }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          script: |
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPONAME }}:latest
+            echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" > .env
+            sudo docker-compose --env-file .env -f docker-compose.yml up -d
                 
       - name: Check Deploy Server URL
         uses: jtalk/url-health-check-action@v3
