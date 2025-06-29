@@ -33,13 +33,14 @@ class JwtAuthFilter(
             val claims: Claims = jwtUtil.parse(token)
             val uid: Long = claims.subject.toLong()
 
-            val user = userRepository.findById(uid)
-                .orElseThrow { UserNotFoundException() }
+            val user = userRepository.findById(uid).orElseThrow { UserNotFoundException() }
+
+            val principal = CustomPrincipal(user, mutableMapOf())
 
             val authentication = UsernamePasswordAuthenticationToken(
-                user.id,
+                principal,
                 null,
-                listOf(SimpleGrantedAuthority(user.role.value))
+                principal.authorities
             )
 
             SecurityContextHolder.getContext().authentication = authentication

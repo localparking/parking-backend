@@ -14,11 +14,17 @@ class TokenService (
 ){
     @Transactional
     fun saveRefreshToken(userId: Long, refreshToken: String) {
-        userRepository.findById(userId)
-            ?: throw UserNotFoundException()
+        val existingToken = tokenRepository.findByUserId(userId)
 
-        val token = Token(userId, refreshToken)
-        tokenRepository.save(token)
+        if (existingToken != null) {
+            existingToken.updateRefreshToken(refreshToken)
+            tokenRepository.save(existingToken)
+        } else {
+            userRepository.findById(userId)
+                ?: throw UserNotFoundException()
+            val newToken = Token(userId, refreshToken)
+            tokenRepository.save(newToken)
+        }
     }
 
     @Transactional

@@ -15,6 +15,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.CorsConfigurationSource
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @Configuration
 @EnableWebSecurity
@@ -29,6 +32,7 @@ class SecurityConfig(
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .csrf { it.disable() }
+            .cors { }
             .formLogin { it.disable() }
             .httpBasic { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
@@ -38,10 +42,12 @@ class SecurityConfig(
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
                     "/swagger-resources/**",
-                    "/webjars/**"
+                    "/webjars/**",
+                    "/auth/**"
                 ).permitAll()
                     .requestMatchers("/admin/**").hasRole("ADMIN")
                     .requestMatchers("/api/**").authenticated()
+                    .requestMatchers("/auth/refresh", "/auth/reissue-refresh").authenticated()
                     .anyRequest().denyAll()
             }
             .oauth2Login {
@@ -61,5 +67,17 @@ class SecurityConfig(
         val builder = http.getSharedObject(AuthenticationManagerBuilder::class.java)
         builder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder)
         return builder.build()
+    }
+    @Bean
+    fun corsConfigurationSource(): CorsConfigurationSource {
+        val config = CorsConfiguration().apply {
+            allowedOrigins = listOf("http://localhost:3000", "https://townparking.store", "http://localhost:8080")
+            allowedMethods = listOf("*")
+            allowedHeaders = listOf("*")
+            allowCredentials = true
+        }
+        return UrlBasedCorsConfigurationSource().also {
+            it.registerCorsConfiguration("/**", config)
+        }
     }
 }

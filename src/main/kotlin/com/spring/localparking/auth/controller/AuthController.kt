@@ -1,6 +1,7 @@
 package com.spring.localparking.auth.controller
 
 
+import com.spring.localparking.auth.dto.TokenResponse
 import com.spring.localparking.auth.exception.UnauthorizedException
 import com.spring.localparking.auth.security.CustomPrincipal
 import com.spring.localparking.auth.service.TokenService
@@ -37,12 +38,13 @@ class AuthController(
     @PostMapping("/refresh")
     fun refreshAccessToken(
         @AuthenticationPrincipal principal: CustomPrincipal
-    ): ResponseEntity<ResponseDto<Map<String, String>>> {
+    ): ResponseEntity<ResponseDto<TokenResponse>> {
         val userId = requireNotNull(principal.id) {throw UnauthorizedException()}
         val user = userRepository.findById(userId)
             .orElseThrow { UserNotFoundException() }
         val accessToken = jwtUtil.generateAccessToken(userId, user.role.value)
-        return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, mapOf("accessToken" to accessToken)))
+        val response = TokenResponse(accessToken, null)
+        return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, response))
     }
 
     @Operation(summary = "Refresh Token 재발급", description = "Refresh Token을 재발급하는 API입니다.")
@@ -57,14 +59,15 @@ class AuthController(
     @PostMapping("/reissue-refresh")
     fun reissueRefreshToken(
         @AuthenticationPrincipal principal: CustomPrincipal
-    ): ResponseEntity<ResponseDto<Map<String, String>>> {
+    ): ResponseEntity<ResponseDto<TokenResponse>> {
         val userId = requireNotNull(principal.id) {throw UnauthorizedException()}
 
         val refreshToken = jwtUtil.generateRefreshToken(userId)
         tokenService.renewRefreshToken(userId, refreshToken)
+        val response = TokenResponse(null, refreshToken)
 
         return ResponseEntity.ok(
-            ResponseDto.from(SuccessCode.OK, mapOf("refreshToken" to refreshToken))
+            ResponseDto.from(SuccessCode.OK, response)
         )
     }
 }
