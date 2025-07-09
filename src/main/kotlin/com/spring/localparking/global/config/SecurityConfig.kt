@@ -39,6 +39,8 @@ class SecurityConfig(
             .authorizeHttpRequests {
                 it.requestMatchers(
                     "/admin/auth/login",
+                    "/auth/login/apple",
+                    "/auth/login/kakao",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
                     "/swagger-resources/**",
@@ -47,7 +49,7 @@ class SecurityConfig(
                 ).permitAll()
                     .requestMatchers("/admin/**").hasRole("ADMIN")
                     .requestMatchers("/api/**").authenticated()
-                    .requestMatchers("/auth/refresh", "/auth/reissue-refresh").authenticated()
+                    .requestMatchers("/auth/refresh").authenticated()
                     .anyRequest().denyAll()
             }
             .oauth2Login {
