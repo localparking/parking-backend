@@ -27,8 +27,8 @@ class KakaoOauth2UserService(
         val kakaoAccount = attr["kakao_account"] as? Map<*, *> ?: emptyMap<Any, Any>()
         val email = kakaoAccount["email"]?.toString() ?: "unknown"
 
-        val user = userRepository.findByProviderId(kakaoId)
-            ?: userRepository.save(User.ofProvider(Provider.KAKAO, kakaoId, nickname, email))
+        val user = userRepository.findByProviderAndProviderId(Provider.KAKAO, kakaoId.toString())
+            ?: userRepository.save(User.ofProvider(Provider.KAKAO, kakaoId.toString(), nickname, email))
 
         return CustomPrincipal(user, attr)
     }

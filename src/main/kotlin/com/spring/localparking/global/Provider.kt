@@ -4,6 +4,6 @@ enum class Provider (
     val value: String
 ) {
     KAKAO("kakao"),
-    GOOGLE("google"),
-    APPLE("apple");
+    APPLE("apple"),
+    NONE("none")
 }

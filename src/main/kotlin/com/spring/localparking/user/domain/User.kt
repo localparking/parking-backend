@@ -1,36 +1,55 @@
 package com.spring.localparking.user.domain
 
+import com.spring.localparking.global.Age
 import com.spring.localparking.global.Provider
 import com.spring.localparking.global.Role
+import com.spring.localparking.global.Weight
 import jakarta.persistence.*
 
 @Entity
-@Table(name="user")
-class User (
+@Table(name="user",
+    uniqueConstraints = [UniqueConstraint(columnNames = ["provider", "providerId"])]
+)
+class User protected constructor(
     @Column(unique = true)
     var adminId : String?=null,
     var password : String?=null,
     @Enumerated(EnumType.STRING)
     var provider: Provider,
-    var providerId : Long,
+    var providerId : String? = null,
     var nickname: String,
     @Column(nullable = false, unique = true)
     var email: String,
     @Enumerated(EnumType.STRING)
-    var role : Role
+    var role : Role = Role.GUEST,
+    val isOnboarding: Boolean = false,
+    val isNotification: Boolean = false,
+    @Enumerated(EnumType.STRING)
+    val ageGroup: Age? = null,
+    @Enumerated(EnumType.STRING)
+    val weight: Weight? = null
 ){
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long?= null
+        protected set
 
     companion object {
-        fun ofProvider(provider: Provider, providerId: Long, nickname: String, email: String): User =
-            User(
-                provider = provider,
-                providerId = providerId,
-                nickname = nickname,
-                email = email,
-                role = Role.USER
-            )
+        fun ofProvider(
+            provider   : Provider,
+            providerId : String,
+            nickname   : String,
+            email      : String?
+        ) = User(
+            provider   = provider,
+            providerId = providerId,
+            nickname   = nickname,
+            email      = email ?: "unknown@placeholder"
+        )
     }
-    constructor() : this(null, null, Provider.KAKAO, 0L, "", "", Role.USER)
+    protected constructor() : this(
+        provider   = Provider.NONE,
+        providerId = "",
+        nickname   = "",
+        email      = "unknown@placeholder"
+    )
 }
