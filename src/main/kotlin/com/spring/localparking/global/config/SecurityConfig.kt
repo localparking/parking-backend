@@ -2,8 +2,8 @@ package com.spring.localparking.global.config
 
 import com.spring.localparking.auth.OAuth2SuccessHandler
 import com.spring.localparking.auth.security.JwtAuthFilter
-import com.spring.localparking.auth.service.CustomUserDetailsService
-import com.spring.localparking.auth.service.KakaoOauth2UserService
+import com.spring.localparking.auth.service.social.CustomUserDetailsService
+import com.spring.localparking.auth.service.social.KakaoOauth2UserService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager

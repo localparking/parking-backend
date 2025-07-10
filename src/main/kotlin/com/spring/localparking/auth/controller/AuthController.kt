@@ -1,12 +1,11 @@
 package com.spring.localparking.auth.controller
 
 
-import com.spring.localparking.auth.dto.TokenReq
+import com.spring.localparking.auth.dto.TokenRequest
 import com.spring.localparking.auth.dto.TokenResponse
 import com.spring.localparking.auth.exception.UnauthorizedException
 import com.spring.localparking.auth.security.CustomPrincipal
-import com.spring.localparking.auth.service.SocialAuthService
-import com.spring.localparking.auth.service.TokenService
+import com.spring.localparking.auth.service.social.SocialAuthService
 import com.spring.localparking.global.response.ResponseDto
 import com.spring.localparking.global.response.SuccessCode
 import com.spring.localparking.global.util.JwtUtil
@@ -70,7 +69,7 @@ class AuthController(
         ]
     )
     @PostMapping("/kakao")
-    fun kakao(@RequestBody @Valid req: TokenReq
+    fun kakao(@RequestBody @Valid req: TokenRequest
     ): ResponseEntity<ResponseDto<TokenResponse>> {
         val user = socialAuthService.loginKakao(req.token)
         val accessToken = jwtUtil.generateAccessToken(user.id!!, user.role.value)
@@ -90,7 +89,7 @@ class AuthController(
         ]
     )
     @PostMapping("/login/apple")
-    fun apple(@RequestBody @Valid req: TokenReq
+    fun apple(@RequestBody @Valid req: TokenRequest
     ): ResponseEntity<ResponseDto<TokenResponse>> {
         val user = socialAuthService.loginApple(req.token)
         val accessToken = jwtUtil.generateAccessToken(user.id!!, user.role.value)

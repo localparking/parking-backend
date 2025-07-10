@@ -1,4 +1,4 @@
-package com.spring.localparking.auth.dto
+package com.spring.localparking.auth.dto.social
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
