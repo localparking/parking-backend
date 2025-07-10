@@ -9,9 +9,10 @@ class Term (
     @Column(nullable = false)
     var termType : String,
     var version: String? = null,
+    var title: String? = null,
     var content: String? = null,
     var effectiveDate: LocalDateTime = LocalDateTime.now(),
-    mandatory: Boolean = false,
+    var mandatory: Boolean = false,
 
     @OneToMany(mappedBy = "term")
     var users: MutableList<TermAgreement> = mutableListOf()

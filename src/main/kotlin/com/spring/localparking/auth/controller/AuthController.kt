@@ -5,6 +5,7 @@ import com.spring.localparking.auth.dto.TokenRequest
 import com.spring.localparking.auth.dto.TokenResponse
 import com.spring.localparking.auth.exception.UnauthorizedException
 import com.spring.localparking.auth.security.CustomPrincipal
+import com.spring.localparking.auth.service.TokenService
 import com.spring.localparking.auth.service.social.SocialAuthService
 import com.spring.localparking.global.response.ResponseDto
 import com.spring.localparking.global.response.SuccessCode
@@ -27,7 +28,8 @@ import org.springframework.web.bind.annotation.*
 class AuthController(
     private val userRepository: UserRepository,
     private val jwtUtil: JwtUtil,
-    private val socialAuthService: SocialAuthService
+    private val socialAuthService: SocialAuthService,
+    private val tokenService: TokenService
 ) {
     @Operation(summary = "Access Token 갱신", description = "Access Token을 갱신하는 API입니다.")
     @ApiResponses(
@@ -47,6 +49,7 @@ class AuthController(
             .orElseThrow { UserNotFoundException() }
         val accessToken = jwtUtil.generateAccessToken(userId, user.role.value)
         val refreshToken = jwtUtil.generateRefreshToken(userId)
+        tokenService.renewRefreshToken(userId, refreshToken)
         val headers = HttpHeaders().apply {
             add(HttpHeaders.SET_COOKIE, accessToken)
             add(HttpHeaders.SET_COOKIE, refreshToken)
@@ -59,6 +62,7 @@ class AuthController(
             .headers(headers)
             .body(body)
     }
+
     @Operation(summary = "카카오 앱 소셜 로그인", description = "카카오 앱 소셜 로그인을 위한 API입니다.")
     @ApiResponses(
         value = [
@@ -68,7 +72,7 @@ class AuthController(
             ApiResponse(responseCode = "500", description = "서버 오류")
         ]
     )
-    @PostMapping("/kakao")
+    @PostMapping("/login/kakao")
     fun kakao(@RequestBody @Valid req: TokenRequest
     ): ResponseEntity<ResponseDto<TokenResponse>> {
         val user = socialAuthService.loginKakao(req.token)
@@ -79,6 +83,7 @@ class AuthController(
             ResponseDto.from(SuccessCode.OK, res)
         )
     }
+
     @Operation(summary = "애플 앱 소셜 로그인", description = "애플 앱 소셜 로그인을 위한 API입니다.")
     @ApiResponses(
         value = [

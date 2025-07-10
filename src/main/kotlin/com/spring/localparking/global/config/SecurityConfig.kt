@@ -39,8 +39,8 @@ class SecurityConfig(
             .authorizeHttpRequests {
                 it.requestMatchers(
                     "/admin/auth/login",
-                    "/auth/login/apple",
-                    "/auth/login/kakao",
+                    "/auth/login/**",
+                    "/register/**",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
                     "/swagger-resources/**",

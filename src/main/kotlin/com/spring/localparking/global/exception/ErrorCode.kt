@@ -19,5 +19,20 @@ enum class ErrorCode(
     MISSING_TOKEN(HttpStatus.UNAUTHORIZED, "토큰이 없습니다."),
 
     // USER
-    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다.");
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."),
+    ALREADY_REGISTERED(HttpStatus.BAD_REQUEST, "이미 가입된 사용자입니다."),
+
+    //TERM
+    TERM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 약관입니다."),
+    REQUIRED_TERM_NOT_AGREED(HttpStatus.BAD_REQUEST, "필수 약관에 동의하지 않았습니다."),
+    MISSING_REQUIRED_TERMS(HttpStatus.BAD_REQUEST, "약관이 누락되었습니다."),
+
+    //ONBOARDING
+    ALREADY_ONBOARDED(HttpStatus.BAD_REQUEST, "이미 온보딩이 완료된 사용자입니다."),
+    INVALID_AGE_GROUP(HttpStatus.BAD_REQUEST, "유효하지 않은 연령대입니다."),
+    INVALID_WEIGHT(HttpStatus.BAD_REQUEST, "유효하지 않은 가중치 값입니다."),
+
+    //CATEGORY
+    CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 카테고리입니다."),
+    INVALID_CATEGORY(HttpStatus.BAD_REQUEST, "유효하지 않은 카테고리입니다."),
 }
