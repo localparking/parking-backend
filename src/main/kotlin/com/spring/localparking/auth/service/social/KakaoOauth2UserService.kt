@@ -1,4 +1,4 @@
-package com.spring.localparking.auth.service
+package com.spring.localparking.auth.service.social
 
 import com.spring.localparking.auth.security.CustomPrincipal
 import com.spring.localparking.global.Provider
