@@ -51,7 +51,7 @@ class SocialAuthService (
     }
 
     private val jwkSource = RemoteJWKSet<SecurityContext>(
-        URL("https://appleid.apple.com/auth/keys")      // Apple JWKS
+        URL("https://appleid.apple.com/auth/keys")
     )
     private val jwtProcessor = DefaultJWTProcessor<SecurityContext>().apply {
         jwsKeySelector = JWSVerificationKeySelector(
@@ -74,4 +74,5 @@ class SocialAuthService (
         return userRepository.findByProviderAndProviderId(Provider.APPLE, sub)
             ?: userRepository.save(User.ofProvider(Provider.APPLE, sub, email ?: sub, email))
     }
+
 }

@@ -23,12 +23,13 @@ class User protected constructor(
     var email: String,
     @Enumerated(EnumType.STRING)
     var role : Role = Role.GUEST,
-    val isOnboarding: Boolean = false,
-    val isNotification: Boolean = false,
+    var isOnboarding: Boolean = false,
+    var isNotification: Boolean = false,
     @Enumerated(EnumType.STRING)
-    val ageGroup: Age? = null,
+    var ageGroup: Age? = null,
     @Enumerated(EnumType.STRING)
-    val weight: Weight? = null,
+    var weight: Weight? = null,
+
     @OneToMany(
         mappedBy = "user",
         cascade = [CascadeType.ALL],
@@ -65,4 +66,10 @@ class User protected constructor(
         nickname   = "",
         email      = "unknown@placeholder"
     )
+    fun updateRole() {
+        this.role = Role.USER
+    }
+    fun updateIsNotification(isNotification: Boolean) {
+        this.isNotification = isNotification
+    }
 }
