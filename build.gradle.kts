@@ -49,9 +49,13 @@ dependencies {
     implementation("org.apache.httpcomponents.client5:httpclient5:5.2.1")
     implementation("org.springframework.security:spring-security-oauth2-jose")
     implementation("com.nimbusds:nimbus-jose-jwt:9.31")
-    implementation ("io.jsonwebtoken:jjwt-api:0.12.4")
-    runtimeOnly   ("io.jsonwebtoken:jjwt-impl:0.12.4")
-    runtimeOnly   ("io.jsonwebtoken:jjwt-jackson:0.12.4")
+    implementation("io.jsonwebtoken:jjwt-api:0.11.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
+    implementation("org.bouncycastle:bcprov-jdk15on:1.70")
+    implementation("com.auth0:java-jwt:4.4.0")
+    implementation("org.bouncycastle:bcprov-jdk15on:1.70")
+    implementation("org.bouncycastle:bcpkix-jdk15on:1.70")
 }
 
 kotlin {

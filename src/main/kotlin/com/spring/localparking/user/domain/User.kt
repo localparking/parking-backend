@@ -1,5 +1,6 @@
 package com.spring.localparking.user.domain
 
+import com.spring.localparking.auth.domain.Token
 import com.spring.localparking.global.Age
 import com.spring.localparking.global.Provider
 import com.spring.localparking.global.Role
@@ -27,7 +28,19 @@ class User protected constructor(
     @Enumerated(EnumType.STRING)
     val ageGroup: Age? = null,
     @Enumerated(EnumType.STRING)
-    val weight: Weight? = null
+    val weight: Weight? = null,
+    @OneToMany(
+        mappedBy = "user",
+        cascade = [CascadeType.ALL],
+        orphanRemoval = true
+    )
+    var tokens: MutableSet<Token> = mutableSetOf(),
+
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
+    var categories: MutableList<UserCategory> = mutableListOf(),
+
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
+    var terms: MutableList<TermAgreement> = mutableListOf()
 ){
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long?= null

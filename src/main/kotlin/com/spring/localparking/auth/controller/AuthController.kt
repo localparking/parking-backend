@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/auth")
 class AuthController(
-    private val tokenService: TokenService,
     private val userRepository: UserRepository,
     private val jwtUtil: JwtUtil,
     private val socialAuthService: SocialAuthService
@@ -40,7 +39,7 @@ class AuthController(
             ApiResponse(responseCode = "500", description = "서버 오류: 토큰 갱신 중 오류 발생")
         ]
     )
-    @PostMapping("/reissue-refresh")
+    @PostMapping("/refresh")
     fun reissueRefreshToken(
         @AuthenticationPrincipal principal: CustomPrincipal
     ): ResponseEntity<ResponseDto<TokenResponse>> {

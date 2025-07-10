@@ -18,24 +18,24 @@ class JwtUtil(private val jwt: JwtProperties) {
 
     fun generateAccessToken(id: Long, role: String): String =
         Jwts.builder()
-            .subject(id.toString())
+            .setSubject(id.toString())
             .claim("role", role)
-            .issuedAt(Date())
-            .expiration(Date(System.currentTimeMillis() + ACCESS_EXP))
+            .setIssuedAt(Date())
+            .setExpiration(Date(System.currentTimeMillis() + ACCESS_EXP))
             .signWith(key)
             .compact()
 
     fun generateRefreshToken(id: Long): String =
         Jwts.builder()
-            .subject(id.toString())
-            .expiration(Date(System.currentTimeMillis() + REFRESH_EXP))
+            .setSubject(id.toString())
+            .setExpiration(Date(System.currentTimeMillis() + REFRESH_EXP))
             .signWith(key)
             .compact()
 
     fun parse(token: String): Claims =
-        Jwts.parser()
-            .verifyWith(key)
+        Jwts.parserBuilder()
+            .setSigningKey(key)
             .build()
-            .parseSignedClaims(token)
-            .payload
+            .parseClaimsJws(token)
+            .body
 }
