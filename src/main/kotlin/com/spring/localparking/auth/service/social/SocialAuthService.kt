@@ -55,7 +55,7 @@ class SocialAuthService (
     )
     private val jwtProcessor = DefaultJWTProcessor<SecurityContext>().apply {
         jwsKeySelector = JWSVerificationKeySelector(
-            JWSAlgorithm.ES256,
+            JWSAlgorithm.RS256,
             jwkSource
         )
     }
