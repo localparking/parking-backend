@@ -1,8 +1,10 @@
 package com.spring.localparking.global.util
 
-import io.jsonwebtoken.Claims
-import io.jsonwebtoken.Jwts
+import com.spring.global.exception.ErrorCode
+import com.spring.localparking.global.exception.CustomException
+import io.jsonwebtoken.*
 import io.jsonwebtoken.security.Keys
+import io.jsonwebtoken.security.SignatureException
 import org.springframework.stereotype.Component
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -43,4 +45,20 @@ class JwtUtil(private val jwt: JwtProperties) {
     fun parse(token: String): Claims =
         Jwts.parserBuilder().setSigningKey(key).build()
             .parseClaimsJws(token).body
+
+    fun validateToken(token: String) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token)
+        } catch (e: ExpiredJwtException) {
+            throw CustomException(ErrorCode.TOKEN_EXPIRED)
+        } catch (e: SignatureException) {
+            throw CustomException(ErrorCode.INVALID_TOKEN)
+        } catch (e: MalformedJwtException) {
+            throw CustomException(ErrorCode.INVALID_TOKEN)
+        } catch (e: UnsupportedJwtException) {
+            throw CustomException(ErrorCode.INVALID_TOKEN)
+        } catch (e: IllegalArgumentException) {
+            throw CustomException(ErrorCode.INVALID_TOKEN)
+        }
+    }
 }

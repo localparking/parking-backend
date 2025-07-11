@@ -8,7 +8,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User
 
 class CustomPrincipal (
     private val user: User,
-    private val attrs: MutableMap<String, Any>
+    private val attrs: MutableMap<String, Any> = mutableMapOf()
     ) : OAuth2User, UserDetails{
     override fun getAuthorities(): Collection<GrantedAuthority> =
         listOf(SimpleGrantedAuthority(user.role.value))
