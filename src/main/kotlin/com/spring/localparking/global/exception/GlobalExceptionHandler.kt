@@ -28,38 +28,34 @@ class GlobalExceptionHandler {
             val regex = Regex("Column '(.*?)' cannot be null")
             regex.find(it)?.groupValues?.getOrNull(1) ?: "알 수 없는 필드"
         } ?: "알 수 없음"
-        return ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
-            .body(ErrorResponseDto("$msg$columnName"))
+        val errorResponse = ErrorResponseDto(
+            status = HttpStatus.BAD_REQUEST.value(),
+            message = "$msg..."
+        )
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse)
     }
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidation(ex: MethodArgumentNotValidException): ResponseEntity<ErrorResponseDto> {
         val msg = ex.bindingResult.fieldErrors.firstOrNull()
             ?.let {"${it.field} : ${it.defaultMessage}"}
             ?: ErrorCode.INVALID_INPUT_VALUE.message
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponseDto(msg))
+        val errorResponse = ErrorResponseDto(
+            status = HttpStatus.BAD_REQUEST.value(),
+            message = msg
+        )
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse)
     }
 
     @ExceptionHandler(Exception::class)
-    fun handleUnknownException(ex:Exception): ResponseEntity<ErrorResponseDto> =
-        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(ErrorResponseDto(firstLines(trace(ex), 10)))
-
-    @ExceptionHandler(ExpiredJwtException::class)
-    fun handleExpiredToken(ex: ExportException): ResponseEntity<ErrorResponseDto> =
-        ResponseEntity.status(ErrorCode.TOKEN_EXPIRED.status)
-            .body(ErrorResponseDto(ErrorCode.TOKEN_EXPIRED.message))
-
-    @ExceptionHandler(SignatureException::class)
-    fun handleInvalidToken(ex: SignatureException): ResponseEntity<ErrorResponseDto> =
-        ResponseEntity.status(ErrorCode.INVALID_TOKEN.status)
-            .body(ErrorResponseDto(ErrorCode.INVALID_TOKEN.message))
-
-    @ExceptionHandler(MissingRequestHeaderException::class)
-    fun handleMissingHeader(ex: MissingRequestHeaderException): ResponseEntity<ErrorResponseDto> =
-        ResponseEntity.status(ErrorCode.MISSING_TOKEN.status)
-            .body(ErrorResponseDto(ErrorCode.MISSING_TOKEN.message))
-
+    fun handleUnknownException(ex:Exception): ResponseEntity<ErrorResponseDto> {
+        val errorResponse = ErrorResponseDto(
+            status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            message = firstLines(trace(ex), 10)
+        )
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(errorResponse)
+    }
 
     fun firstLines(trace: String, lines: Int): String =
         trace.lineSequence().take(lines).joinToString (System.lineSeparator())

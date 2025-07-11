@@ -1,5 +1,7 @@
 package com.spring.localparking.global.config
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.spring.global.exception.ErrorCode
 import com.spring.localparking.auth.OAuth2SuccessHandler
 import com.spring.localparking.auth.security.JwtAuthFilter
 import com.spring.localparking.auth.service.social.CustomUserDetailsService
@@ -25,14 +27,15 @@ class SecurityConfig(
     private val userDetailsService: CustomUserDetailsService,
     private val jwtAuthFilter: JwtAuthFilter,
     private val kakaoOauth2UserService: KakaoOauth2UserService,
-    private val oAuth2SuccessHandler: OAuth2SuccessHandler
+    private val oAuth2SuccessHandler: OAuth2SuccessHandler,
+    private val objectMapper: ObjectMapper
 ) {
 
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .csrf { it.disable() }
-            .cors { }
+            .cors { it.configurationSource(corsConfigurationSource()) }
             .formLogin { it.disable() }
             .httpBasic { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
@@ -40,25 +43,37 @@ class SecurityConfig(
                 it.requestMatchers(
                     "/admin/auth/login",
                     "/auth/login/**",
-                    "/register/**",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
                     "/swagger-resources/**",
                     "/webjars/**",
-                    "/auth/**"
+                    "/register/terms"
                 ).permitAll()
                     .requestMatchers("/admin/**").hasRole("ADMIN")
-                    .requestMatchers("/api/**").authenticated()
-                    .requestMatchers("/auth/refresh").authenticated()
-                    .anyRequest().denyAll()
+                    .anyRequest().authenticated()
             }
             .oauth2Login {
                 it.userInfoEndpoint { u -> u.userService(kakaoOauth2UserService) }
                     .successHandler(oAuth2SuccessHandler)
             }
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .exceptionHandling { exceptions ->
+                exceptions.authenticationEntryPoint { _, response, _ ->
+                    setErrorResponse(response, ErrorCode.UNAUTHORIZED)
+                }
+                exceptions.accessDeniedHandler { _, response, _ ->
+                    setErrorResponse(response, ErrorCode.ACCESS_DENIED)
+                }
+            }
 
         return http.build()
+    }
+
+    private fun setErrorResponse(response: jakarta.servlet.http.HttpServletResponse, errorCode: ErrorCode) {
+        response.contentType = "application/json;charset=UTF-8"
+        response.status = errorCode.status.value()
+        val errorResponse = mapOf("status" to errorCode.status.value(), "message" to errorCode.message)
+        response.writer.write(objectMapper.writeValueAsString(errorResponse))
     }
 
     @Bean
@@ -70,11 +85,12 @@ class SecurityConfig(
         builder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder)
         return builder.build()
     }
+
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val config = CorsConfiguration().apply {
-            allowedOrigins = listOf("http://localhost:3000", "https://townparking.store", "http://localhost:8080")
-            allowedMethods = listOf("*")
+            allowedOrigins = listOf("http://localhost:3000", "https://dev.townparking.store", "http://localhost:8080")
+            allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
             allowedHeaders = listOf("*")
             allowCredentials = true
         }

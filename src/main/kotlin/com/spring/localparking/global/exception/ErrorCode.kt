@@ -25,7 +25,7 @@ enum class ErrorCode(
     //TERM
     TERM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 약관입니다."),
     REQUIRED_TERM_NOT_AGREED(HttpStatus.BAD_REQUEST, "필수 약관에 동의하지 않았습니다."),
-    MISSING_REQUIRED_TERMS(HttpStatus.BAD_REQUEST, "약관이 누락되었습니다."),
+    MISSING_REQUIRED_TERMS(HttpStatus.BAD_REQUEST, "모든 약관에 응답해주세요."),
 
     //ONBOARDING
     ALREADY_ONBOARDED(HttpStatus.BAD_REQUEST, "이미 온보딩이 완료된 사용자입니다."),
