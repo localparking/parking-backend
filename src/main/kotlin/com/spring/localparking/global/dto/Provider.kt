@@ -1,4 +1,4 @@
-package com.spring.localparking.global
+package com.spring.localparking.global.dto
 
 enum class Provider (
     val value: String

@@ -1,4 +1,4 @@
-package com.spring.localparking.global
+package com.spring.localparking.global.dto
 
 enum class Age (val value: String){
     AGE_10("10"),

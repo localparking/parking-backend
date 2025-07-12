@@ -1,4 +1,4 @@
-package com.spring.localparking.global
+package com.spring.localparking.global.dto
 
 enum class Role(val value: String) {
     GUEST("ROLE_GUEST"),
