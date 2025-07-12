@@ -21,6 +21,6 @@ class OperatingHour(
     val closeTime: LocalTime?,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parking_lot_id")
-    var parkingLot: ParkingLot? = null
+    @JoinColumn(name = "parking_lot_id", referencedColumnName = "parking_code")
+    val parkingLot: ParkingLot
 )
