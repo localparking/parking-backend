@@ -74,5 +74,15 @@ class SocialAuthService (
         return userRepository.findByProviderAndProviderId(Provider.APPLE, sub)
             ?: userRepository.save(User.ofProvider(Provider.APPLE, sub, email ?: sub, email))
     }
+    fun loginAsGuest(): User {
+        val guestId = "guest_${UUID.randomUUID()}"
+        val guestUser = User.ofProvider(
+            provider = Provider.NONE,
+            providerId = guestId,
+            nickname = "Guest",
+            email = "$guestId@guest.com"
+        )
+        return userRepository.save(guestUser)
+    }
 
 }

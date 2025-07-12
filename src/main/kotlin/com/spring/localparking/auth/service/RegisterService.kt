@@ -6,6 +6,7 @@ import com.spring.localparking.auth.dto.join.RegisterRequest
 import com.spring.localparking.auth.dto.join.TermDto
 import com.spring.localparking.auth.dto.join.TermsResponse
 import com.spring.localparking.global.Age
+import com.spring.localparking.global.Provider
 import com.spring.localparking.global.Role
 import com.spring.localparking.global.Weight
 import com.spring.localparking.global.exception.CustomException
@@ -45,6 +46,7 @@ open class RegisterService (
     @Transactional
     fun registerAgreements(userId: Long, request: RegisterRequest) {
         val user = userRepository.findById(userId).orElseThrow { UserNotFoundException() }
+        if(user.provider == Provider.NONE) throw CustomException(ErrorCode.UNAUTHORIZED)
         if (user.role == Role.USER) {
             throw CustomException(ErrorCode.ALREADY_REGISTERED)
         }
