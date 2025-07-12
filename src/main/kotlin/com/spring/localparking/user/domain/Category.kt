@@ -1,5 +1,6 @@
 package com.spring.localparking.user.domain
 
+import com.spring.localparking.store.domain.StoreCategory
 import jakarta.persistence.*
 
 @Entity
@@ -13,8 +14,12 @@ class Category (
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     var parent: Category? = null,
+
     @OneToMany(mappedBy = "category")
-    var users: MutableList<UserCategory> = mutableListOf()
+    var users: MutableList<UserCategory> = mutableListOf(),
+
+    @OneToMany(mappedBy = "category")
+    var stores: MutableList<StoreCategory> = mutableListOf()
 ){
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null

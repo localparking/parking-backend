@@ -1,5 +1,6 @@
 package com.spring.localparking.parking.domain
 
+import com.spring.localparking.store.domain.StoreParkingLot
 import jakarta.persistence.*
 
 @Entity
@@ -23,5 +24,8 @@ class ParkingLot (
     val feePolicy: FeePolicy?,
 
     @OneToMany(mappedBy = "parkingLot", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val operatingHours: List<OperatingHour> = mutableListOf()
+    val operatingHours: List<OperatingHour> = mutableListOf(),
+
+    @OneToMany(mappedBy = "parkingLot", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val storeParkingLots: MutableSet<StoreParkingLot> = mutableSetOf()
 )

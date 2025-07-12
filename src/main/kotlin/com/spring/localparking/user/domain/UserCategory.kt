@@ -13,6 +13,6 @@ class UserCategory (
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "spot_category_id")
+    @JoinColumn(name = "category_id")
     var category: Category
 )
