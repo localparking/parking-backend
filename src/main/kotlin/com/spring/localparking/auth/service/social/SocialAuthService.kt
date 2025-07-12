@@ -8,7 +8,7 @@ import com.nimbusds.jose.proc.JWSVerificationKeySelector
 import com.nimbusds.jose.proc.SecurityContext
 import com.nimbusds.jwt.proc.DefaultJWTProcessor
 import com.spring.localparking.auth.dto.social.KakaoUserMe
-import com.spring.localparking.global.Provider
+import com.spring.localparking.global.dto.Provider
 import com.spring.localparking.user.domain.User
 import com.spring.localparking.user.repository.UserRepository
 import jakarta.transaction.Transactional

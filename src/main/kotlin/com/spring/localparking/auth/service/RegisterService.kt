@@ -5,10 +5,10 @@ import com.spring.localparking.auth.dto.OnboardingRequest
 import com.spring.localparking.auth.dto.join.RegisterRequest
 import com.spring.localparking.auth.dto.join.TermDto
 import com.spring.localparking.auth.dto.join.TermsResponse
-import com.spring.localparking.global.Age
-import com.spring.localparking.global.Provider
-import com.spring.localparking.global.Role
-import com.spring.localparking.global.Weight
+import com.spring.localparking.global.dto.Age
+import com.spring.localparking.global.dto.Provider
+import com.spring.localparking.global.dto.Role
+import com.spring.localparking.global.dto.Weight
 import com.spring.localparking.global.exception.CustomException
 import com.spring.localparking.user.domain.TermAgreement
 import com.spring.localparking.user.domain.UserCategory
