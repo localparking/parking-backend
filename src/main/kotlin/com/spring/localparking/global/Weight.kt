@@ -3,5 +3,6 @@ package com.spring.localparking.global
 enum class Weight(val value: String) {
     PRICE("price"),
     DISTANCE("distance"),
-    PARKING_SPACE("parking_space")
+    PARKING_SPACE("parking_space"),
+    CCTV("cctv")
 }
