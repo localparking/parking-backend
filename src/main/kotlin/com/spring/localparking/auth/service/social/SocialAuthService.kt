@@ -8,7 +8,7 @@ import com.nimbusds.jose.proc.JWSVerificationKeySelector
 import com.nimbusds.jose.proc.SecurityContext
 import com.nimbusds.jwt.proc.DefaultJWTProcessor
 import com.spring.localparking.auth.dto.social.KakaoUserMe
-import com.spring.localparking.global.Provider
+import com.spring.localparking.global.dto.Provider
 import com.spring.localparking.user.domain.User
 import com.spring.localparking.user.repository.UserRepository
 import jakarta.transaction.Transactional
@@ -73,6 +73,16 @@ class SocialAuthService (
 
         return userRepository.findByProviderAndProviderId(Provider.APPLE, sub)
             ?: userRepository.save(User.ofProvider(Provider.APPLE, sub, email ?: sub, email))
+    }
+    fun loginAsGuest(): User {
+        val guestId = "guest_${UUID.randomUUID()}"
+        val guestUser = User.ofProvider(
+            provider = Provider.NONE,
+            providerId = guestId,
+            nickname = "Guest",
+            email = "$guestId@guest.com"
+        )
+        return userRepository.save(guestUser)
     }
 
 }

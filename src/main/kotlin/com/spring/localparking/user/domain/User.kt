@@ -1,10 +1,10 @@
 package com.spring.localparking.user.domain
 
 import com.spring.localparking.auth.domain.Token
-import com.spring.localparking.global.Age
-import com.spring.localparking.global.Provider
-import com.spring.localparking.global.Role
-import com.spring.localparking.global.Weight
+import com.spring.localparking.global.dto.Age
+import com.spring.localparking.global.dto.Provider
+import com.spring.localparking.global.dto.Role
+import com.spring.localparking.global.dto.Weight
 import jakarta.persistence.*
 
 @Entity

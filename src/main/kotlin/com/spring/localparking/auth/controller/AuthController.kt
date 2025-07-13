@@ -78,9 +78,10 @@ class AuthController(
         val user = socialAuthService.loginKakao(req.token)
         val accessToken = jwtUtil.generateAccessToken(user.id!!, user.role.value)
         val refreshToken = jwtUtil.generateRefreshToken(user.id!!)
+        tokenService.saveRefreshToken(user.id!!, refreshToken)
         val res = TokenResponse(accessToken, refreshToken)
         return ResponseEntity.ok(
-            ResponseDto.from(SuccessCode.OK, res)
+            ResponseDto.from(SuccessCode.USER_LOGGED_IN, res)
         )
     }
 
@@ -99,9 +100,28 @@ class AuthController(
         val user = socialAuthService.loginApple(req.token)
         val accessToken = jwtUtil.generateAccessToken(user.id!!, user.role.value)
         val refreshToken = jwtUtil.generateRefreshToken(user.id!!)
+        tokenService.saveRefreshToken(user.id!!, refreshToken)
         val res = TokenResponse(accessToken, refreshToken)
         return ResponseEntity.ok(
-            ResponseDto.from(SuccessCode.OK, res)
+            ResponseDto.from(SuccessCode.USER_LOGGED_IN, res)
+        )
+    }
+    @Operation(summary = "게스트 로그인", description = "게스트 로그인을 위한 API입니다.")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "로그인 성공"),
+            ApiResponse(responseCode = "500", description = "서버 오류")
+        ]
+    )
+    @PostMapping("/login/guest")
+    fun guestLogin(): ResponseEntity<ResponseDto<TokenResponse>> {
+        val guestUser = socialAuthService.loginAsGuest()
+        val accessToken = jwtUtil.generateAccessToken(guestUser.id!!, guestUser.role.value)
+        val refreshToken = jwtUtil.generateRefreshToken(guestUser.id!!)
+        tokenService.saveRefreshToken(guestUser.id!!, refreshToken)
+        val response = TokenResponse(accessToken, refreshToken)
+        return ResponseEntity.ok(
+            ResponseDto.from(SuccessCode.USER_LOGGED_IN, response)
         )
     }
 }

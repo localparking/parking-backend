@@ -1,7 +1,7 @@
 package com.spring.localparking.user.dto
 
-import com.spring.localparking.global.Provider
-import com.spring.localparking.global.Role
+import com.spring.localparking.global.dto.Provider
+import com.spring.localparking.global.dto.Role
 
 data class UserResponse(
     val email: String,

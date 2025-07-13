@@ -1,7 +1,7 @@
 package com.spring.localparking.auth.service.social
 
 import com.spring.localparking.auth.security.CustomPrincipal
-import com.spring.localparking.global.Provider
+import com.spring.localparking.global.dto.Provider
 import com.spring.localparking.user.domain.User
 import com.spring.localparking.user.repository.UserRepository
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService

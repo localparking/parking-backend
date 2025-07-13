@@ -56,6 +56,9 @@ dependencies {
     implementation("com.auth0:java-jwt:4.4.0")
     implementation("org.bouncycastle:bcprov-jdk15on:1.70")
     implementation("org.bouncycastle:bcpkix-jdk15on:1.70")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("org.slf4j:slf4j-api:2.0.13")
 }
 
 kotlin {
