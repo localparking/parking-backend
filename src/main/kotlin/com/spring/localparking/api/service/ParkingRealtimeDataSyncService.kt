@@ -14,16 +14,16 @@ class ParkingRealtimeDataSyncService(
     private val seoulParkingApiClient: SeoulParkingApiClient,
     private val redisTemplate: StringRedisTemplate
 ) {
-    @Scheduled(fixedRate = 60000)
+    //@Scheduled(fixedRate = 60000)
     fun syncRealtimeParkingData() {
         var totalUpdatedCount = 0
 
         val totalTime = measureTimeMillis {
             redisTemplate.executePipelined { connection ->
                 ApiConstants.SEOUL_API_AREAS.forEach { areaName ->
-                    val parkingInfosForArea = seoulParkingApiClient.fetchDataForArea(areaName)
+                    val parkingInfosForArea = seoulParkingApiClient.fetchParkingDataForHotspot(areaName)
 
-                    val targetInfos = parkingInfosForArea.filter { it.isRealtimeEnabled == "Y" }
+                    val targetInfos = parkingInfosForArea.filter { it.isRealtimeEnabled}
 
                     targetInfos.forEach { info ->
                         val availableSpaces = info.currentParkingCount?.toIntOrNull()
