@@ -35,4 +35,12 @@ enum class ErrorCode(
     //CATEGORY
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 카테고리입니다."),
     INVALID_CATEGORY(HttpStatus.BAD_REQUEST, "유효하지 않은 카테고리입니다."),
+
+    //PARKING
+    PARKING_LOT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주차장입니다."),
+    FEE_POLICY_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 요금 정책입니다."),
+    OPERATING_HOUR_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 운영 시간입니다."),
+
+    //TYPE
+    SORT_TYPE_NOT_FOUND(HttpStatus.BAD_REQUEST, "유효하지 않은 정렬 타입입니다."),
 }

@@ -3,27 +3,30 @@ package com.spring.localparking.api.dto
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class SeoulApiDto(
-    @JsonProperty("CITYDATA")
-    val cityData: CityData
-) {
-    data class CityData(
-        @JsonProperty("PRK_STTS")
-        val parkingStatus: List<ParkingInfo>
-    )
-    data class ParkingInfo(
-        @JsonProperty("PRK_NM") val parkingName: String,
-        @JsonProperty("PRK_CD") val parkingCode: String,
-        @JsonProperty("PRK_TYPE") val parkingType: String?,
-        @JsonProperty("CPCTY") val capacity: String?,
-        @JsonProperty("CUR_PRK_CNT") val currentParkingCount: String?,
-        @JsonProperty("CUR_PRK_YN") val isRealtimeEnabled: String,
-        @JsonProperty("PAY_YN") val isPaid: String,
-        @JsonProperty("RATES") val baseFee: String?,
-        @JsonProperty("TIME_RATES") val baseTime: String?,
-        @JsonProperty("ADD_RATES") val additionalFee: String?,
-        @JsonProperty("ADD_TIME_RATES") val additionalTime: String?,
-        @JsonProperty("ADDRESS") val address: String?,
-        @JsonProperty("LAT") val latitude: String?,
-        @JsonProperty("LNG") val longitude: String?
-    )
-}
+    @JsonProperty("privateParkingList")
+    val privateParkingList: List<ParkingInfo>
+)
+
+data class ParkingInfo(
+    @JsonProperty("prk_type") val parkingType: String?,
+    @JsonProperty("prk_nm") val parkingName: String,
+    @JsonProperty("prk_cd") val parkingCode: String,
+    @JsonProperty("cpcty") val capacity: String?,
+    @JsonProperty("cur_prk_cnt") val currentParkingCount: String?,
+    @JsonProperty("realtime") val isRealtimeEnabled: Boolean,
+    @JsonProperty("pay_yn") val isPaid: String,
+    @JsonProperty("rates") val baseFee: String?,
+    @JsonProperty("time_rates") val baseTime: String?,
+    @JsonProperty("add_rates") val additionalFee: String?,
+    @JsonProperty("add_time_rates") val additionalTime: String?,
+    @JsonProperty("phone") val tel: String?,
+    @JsonProperty("address") val address: String?,
+    @JsonProperty("lat") val latitude: String?,
+    @JsonProperty("lng") val longitude: String?,
+    @JsonProperty("weekday_begin_time") val weekdayBeginTime: String?,
+    @JsonProperty("weekday_end_time") val weekdayEndTime: String?,
+    @JsonProperty("weekend_begin_time") val weekendBeginTime: String?,
+    @JsonProperty("weekend_end_time") val weekendEndTime: String?,
+    @JsonProperty("holiday_begin_time") val holidayBeginTime: String?,
+    @JsonProperty("holiday_end_time") val holidayEndTime: String?
+)

@@ -1,6 +1,5 @@
 package com.spring.localparking.store.domain
 
-import com.spring.localparking.global.dto.DayOfWeek
 import jakarta.persistence.*
 
 @Entity
@@ -36,9 +35,8 @@ data class Store(
     @Column(name = "operating_info")
     val operatingInfo: String?,
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "closed_days")
-    val closedDays: DayOfWeek?,
+    val closedDays: String?,
 
     @Column(name = "has_nursing_room")
     val hasNursingRoom: Boolean?,
