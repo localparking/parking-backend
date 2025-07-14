@@ -2,6 +2,7 @@ package com.spring.localparking.api.service
 
 import com.spring.localparking.api.config.SeoulParkingApiClient
 import com.spring.localparking.api.dto.ApiConstants
+import com.spring.localparking.parking.repository.ParkingLotSearchRepository
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -12,9 +13,10 @@ import kotlin.system.measureTimeMillis
 @Service
 class ParkingRealtimeDataSyncService(
     private val seoulParkingApiClient: SeoulParkingApiClient,
-    private val redisTemplate: StringRedisTemplate
+    private val redisTemplate: StringRedisTemplate,
+    private val parkingLotSearchRepository: ParkingLotSearchRepository
 ) {
-    //@Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 60000)
     fun syncRealtimeParkingData() {
         var totalUpdatedCount = 0
 
@@ -26,14 +28,14 @@ class ParkingRealtimeDataSyncService(
                     val targetInfos = parkingInfosForArea.filter { it.isRealtimeEnabled}
 
                     targetInfos.forEach { info ->
-                        val availableSpaces = info.currentParkingCount?.toIntOrNull()
+                        val curCapacity = info.currentParkingCount?.toIntOrNull()
                         val totalCapacity = info.capacity?.toIntOrNull()
 
-                        if (availableSpaces != null && totalCapacity != null) {
-                            val status = calculateParkingStatus(availableSpaces, totalCapacity)
+                        if (curCapacity != null && totalCapacity != null) {
+                            val status = calculateParkingStatus(curCapacity, curCapacity)
                             val key = "parking:realtime:${info.parkingCode}"
                             val values = mapOf(
-                                "availableSpaces" to availableSpaces.toString(),
+                                "curCapacity" to curCapacity.toString(),
                                 "status" to status,
                                 "lastUpdated" to LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                             )
@@ -45,6 +47,10 @@ class ParkingRealtimeDataSyncService(
                                 if (rawKey != null && rawField != null && rawValue != null) {
                                     connection.hashCommands().hSet(rawKey, rawField, rawValue)
                                 }
+                            }
+                            parkingLotSearchRepository.findById(info.parkingCode).ifPresent { doc ->
+                                val updatedDoc = doc.copy(congestion = status)
+                                parkingLotSearchRepository.save(updatedDoc)
                             }
                             totalUpdatedCount++
                         }

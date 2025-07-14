@@ -12,49 +12,39 @@ class OperatingHour(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
-    val weekdayBeginTime: String?=null,
-    val weekdayEndTime: String?=null,
-    val weekendBeginTime: String?=null,
-    val weekendEndTime: String?=null,
-    val holidayBeginTime: String?=null,
-    val holidayEndTime: String?=null
+    @OneToMany(mappedBy = "operatingHour", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val timeSlots: MutableList<TimeSlot> = mutableListOf()
 ) {
-    fun isOpenNow(): Boolean {
-        val now = LocalTime.now()
-        val today = LocalDate.now()
-        val dayOfWeek = today.dayOfWeek
-        val isHoliday = isHoliday(today)
-
-        val (beginTimeStr, endTimeStr) = when {
-            isHoliday -> holidayBeginTime to holidayEndTime
-            dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY -> weekendBeginTime to weekendEndTime
-            else -> weekdayBeginTime to weekdayEndTime
+    // 현재 시간에 운영 중인지 확인하는 로직
+    fun isOpenNow(): Boolean? {
+        if (timeSlots.isEmpty()) {
+            return null
         }
-
-        if (beginTimeStr == null || endTimeStr == null) return true
-
-        val openTime = parseTime(beginTimeStr) ?: return true
-        val closeTime = parseTime(endTimeStr) ?: return true
-
-        if (openTime == LocalTime.MIN && closeTime == LocalTime.MIN) return true
-
-        return !now.isBefore(openTime) && now.isBefore(closeTime)
+        return isOpen(LocalDate.now().dayOfWeek, LocalTime.now())
     }
 
-    private fun parseTime(timeStr: String): LocalTime? {
-        if (timeStr.length != 4) return null
-        // "2400"은 다음날 0시를 의미하므로, 하루의 끝이 아닌 시작으로 처리
-        if (timeStr == "2400") return LocalTime.MIN
-        return try {
-            val hour = timeStr.substring(0, 2).toInt()
-            val minute = timeStr.substring(2, 4).toInt()
-            LocalTime.of(hour, minute)
-        } catch (e: Exception) {
-            null
+    // 특정 요일, 특정 시간에 운영 중인지 확인하는 로직
+    fun isOpen(dayOfWeek: DayOfWeek, time: LocalTime): Boolean? {
+        if (is24Hours(dayOfWeek)) {
+            return true
+        }
+        if(timeSlots.isEmpty()) {
+            return null
+        }
+        return timeSlots.any { it.dayOfWeek == dayOfWeek && it.contains(time) }
+    }
+
+    // 24시간 운영하는지 확인
+    fun is24Hours(dayOfWeek: DayOfWeek): Boolean {
+        return timeSlots.any {
+            it.dayOfWeek == dayOfWeek &&
+                    it.beginTime == LocalTime.MIN &&
+                    it.endTime == LocalTime.MAX
         }
     }
-    //임시
-    private fun isHoliday(date: LocalDate): Boolean {
-        return false
+
+    fun addTimeSlot(timeSlot: TimeSlot) {
+        timeSlots.add(timeSlot)
+        timeSlot.operatingHour = this
     }
 }

@@ -1,6 +1,6 @@
 package com.spring.localparking.parking.domain
 
-import com.spring.localparking.api.dto.SeoulApiDto // [추가됨]
+import com.spring.localparking.api.dto.ParkingInfo
 import com.spring.localparking.store.domain.StoreParkingLot
 import jakarta.persistence.*
 
@@ -15,6 +15,7 @@ class ParkingLot (
     var capacity: Int? = null,
     var isRealtime: Boolean = false,
     var isFree: Boolean = false,
+    var tel: String? = null,
     var address: String? = null,
     var lat: Double? = null,
     var lon: Double? = null,
@@ -24,37 +25,42 @@ class ParkingLot (
     @JoinColumn(name = "fee_policy_id", referencedColumnName = "id")
     var feePolicy: FeePolicy?,
 
-    @OneToMany(mappedBy = "parkingLot", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val operatingHours: List<OperatingHour> = mutableListOf(),
+    @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+    @JoinColumn(name = "operating_hour_id", referencedColumnName = "id")
+    var operatingHour: OperatingHour?,
 
     @OneToMany(mappedBy = "parkingLot", cascade = [CascadeType.ALL], orphanRemoval = true)
     val storeParkingLots: MutableSet<StoreParkingLot> = mutableSetOf()
 ) {
-    fun updateInfo(info: SeoulApiDto.ParkingInfo, feePolicy: FeePolicy) {
+    fun updateInfo(info: ParkingInfo, feePolicy: FeePolicy, operatingHour: OperatingHour) {
         this.name = info.parkingName
         this.address = info.address
         this.parkingType = info.parkingType
         this.capacity = info.capacity?.toIntOrNull()
-        this.isRealtime = info.isRealtimeEnabled == "Y"
+        this.isRealtime = info.isRealtimeEnabled
         this.isFree = info.isPaid == "N"
+        this.tel = info.tel
         this.lat = info.latitude?.toDoubleOrNull()
         this.lon = info.longitude?.toDoubleOrNull()
         this.feePolicy = feePolicy
+        this.operatingHour = operatingHour
     }
 
     companion object {
-        fun from(info: SeoulApiDto.ParkingInfo, feePolicy: FeePolicy): ParkingLot {
+        fun from(info: ParkingInfo, feePolicy: FeePolicy, operatingHour: OperatingHour): ParkingLot {
             return ParkingLot(
                 parkingCode = info.parkingCode,
                 name = info.parkingName,
                 address = info.address,
                 parkingType = info.parkingType,
                 capacity = info.capacity?.toIntOrNull(),
-                isRealtime = info.isRealtimeEnabled == "Y",
+                isRealtime = info.isRealtimeEnabled,
                 isFree = info.isPaid == "N",
+                tel = info.tel,
                 lat = info.latitude?.toDoubleOrNull(),
                 lon = info.longitude?.toDoubleOrNull(),
-                feePolicy = feePolicy
+                feePolicy = feePolicy,
+                operatingHour = operatingHour
             )
         }
     }
