@@ -24,11 +24,11 @@ class ParkingStaticDataSyncService(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-//    @PostConstruct
-//    fun init() {
-//        log.info("===== [SYSTEM] 애플리케이션 시작 시 주차장 기본 정보 초기화를 수행합니다. =====")
-//        syncStaticParkingData()
-//    }
+    @PostConstruct
+    fun init() {
+        log.info("===== [SYSTEM] 애플리케이션 시작 시 주차장 기본 정보 초기화를 수행합니다. =====")
+        syncStaticParkingData()
+    }
 
     @Scheduled(cron = "0 0 2 * * MON")
     @Transactional
