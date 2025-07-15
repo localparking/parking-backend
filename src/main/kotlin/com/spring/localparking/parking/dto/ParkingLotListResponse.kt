@@ -14,12 +14,11 @@ data class ParkingLotListResponse(
     val baseTimeMin: Int?,
     val lat: Double,
     val lon: Double,
-    val isOpen: Boolean? = null,
-    val congestion: String?
+    val isOpen: Boolean? = null
 
 ) {
     companion object {
-        fun of(doc: ParkingLotDocument, congestion: String?, curCapacity: Int?, isOpen: Boolean? ): ParkingLotListResponse {
+        fun of(doc: ParkingLotDocument, curCapacity: Int?, isOpen: Boolean? ): ParkingLotListResponse {
             return ParkingLotListResponse(
                 parkingCode = doc.parkingCode,
                 name = doc.name,
@@ -31,8 +30,7 @@ data class ParkingLotListResponse(
                 lat = doc.location.lat,
                 lon = doc.location.lon,
                 isOpen = isOpen,
-                curCapacity = curCapacity,
-                congestion = congestion
+                curCapacity = curCapacity
             )
         }
     }

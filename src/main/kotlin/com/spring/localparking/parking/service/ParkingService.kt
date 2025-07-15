@@ -38,7 +38,7 @@ class ParkingLotService(
             val realtimeInfo = realtimeInfoMap[doc.parkingCode]
             val curCapacity = realtimeInfo?.second
             val isOpen = isParkingLotOpenNow(doc.parkingCode)
-            ParkingLotListResponse.of(doc, doc.congestion, curCapacity, isOpen)
+            ParkingLotListResponse.of(doc, curCapacity, isOpen)
         }
 
         val pagingInfo = PagingInfo(page = pageResult.number, totalPages = pageResult.totalPages)
