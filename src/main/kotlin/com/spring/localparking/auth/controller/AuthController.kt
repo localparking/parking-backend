@@ -3,6 +3,7 @@ package com.spring.localparking.auth.controller
 
 import com.spring.localparking.auth.dto.TokenRequest
 import com.spring.localparking.auth.dto.TokenResponse
+import com.spring.localparking.auth.dto.social.AppleLoginRequest
 import com.spring.localparking.auth.exception.UnauthorizedException
 import com.spring.localparking.auth.security.CustomPrincipal
 import com.spring.localparking.auth.service.TokenService
@@ -70,9 +71,9 @@ class AuthController(
 
     @Operation(summary = "애플 앱 소셜 로그인", description = "애플 앱 소셜 로그인을 위한 API입니다.")
     @PostMapping("/login/apple")
-    fun apple(@RequestBody @Valid req: TokenRequest
+    fun apple(@RequestBody @Valid req: AppleLoginRequest
     ): ResponseEntity<ResponseDto<TokenResponse>> {
-        val user = socialAuthService.loginApple(req.token)
+        val user = socialAuthService.loginApple(req)
         val accessToken = jwtUtil.generateAccessToken(user.id!!, user.role.value)
         val refreshToken = jwtUtil.generateRefreshToken(user.id!!)
         tokenService.saveRefreshToken(user.id!!, refreshToken)
