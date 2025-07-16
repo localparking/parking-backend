@@ -1,6 +1,7 @@
-package com.spring.localparking.user.domain
+package com.spring.localparking.category.domain
 
 import com.spring.localparking.store.domain.StoreCategory
+import com.spring.localparking.user.domain.UserCategory
 import jakarta.persistence.*
 
 @Entity
