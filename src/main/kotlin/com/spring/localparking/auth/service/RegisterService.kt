@@ -15,7 +15,7 @@ import com.spring.localparking.user.domain.UserCategory
 import com.spring.localparking.user.dto.CategoryDto
 import com.spring.localparking.user.dto.CategoryResponse
 import com.spring.localparking.user.exception.UserNotFoundException
-import com.spring.localparking.user.repository.CategoryRepository
+import com.spring.localparking.category.repository.CategoryRepository
 import com.spring.localparking.user.repository.TermAgreementRepository
 import com.spring.localparking.user.repository.TermRepository
 import com.spring.localparking.user.repository.UserRepository
@@ -81,16 +81,6 @@ open class RegisterService (
         user.updateRole()
     }
 
-
-    fun getCategories(): CategoryResponse {
-        val parentCategories = categoryRepository.findAllByParentIsNull()
-        return CategoryResponse(parentCategories.map {
-            CategoryDto(
-                categoryId = it.id!!,
-                categoryName = it.name
-            )
-        })
-    }
 
     @Transactional
     fun completeOnboarding(userId: Long, request: OnboardingRequest) {
