@@ -1,7 +1,7 @@
 package com.spring.localparking.global.config
 
-import com.spring.localparking.parking.config.DayOfWeekToStringConverter
-import com.spring.localparking.parking.config.StringToDayOfWeekConverter
+import com.spring.localparking.operatingHour.config.DayOfWeekToStringConverter
+import com.spring.localparking.operatingHour.config.StringToDayOfWeekConverter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.elasticsearch.core.convert.ElasticsearchCustomConversions
