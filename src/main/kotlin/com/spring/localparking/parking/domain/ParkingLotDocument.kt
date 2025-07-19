@@ -1,5 +1,6 @@
 package com.spring.localparking.parking.domain
 
+import com.spring.localparking.operatingHour.domain.DocumentOperatingHour
 import org.springframework.data.annotation.Id
 import org.springframework.data.elasticsearch.annotations.Document
 import org.springframework.data.elasticsearch.annotations.Field

@@ -1,6 +1,7 @@
 package com.spring.localparking.parking.domain
 
 import com.spring.localparking.api.dto.ParkingInfo
+import com.spring.localparking.operatingHour.domain.OperatingHour
 import com.spring.localparking.store.domain.StoreParkingLot
 import jakarta.persistence.*
 

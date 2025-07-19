@@ -1,6 +1,6 @@
 package com.spring.localparking.parking.dto
 
-import com.spring.localparking.parking.domain.TimeSlot
+import com.spring.localparking.operatingHour.domain.TimeSlot
 import java.time.format.DateTimeFormatter
 
 data class OperatingHoursDto(

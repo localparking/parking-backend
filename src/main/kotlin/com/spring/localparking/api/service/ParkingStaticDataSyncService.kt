@@ -2,6 +2,9 @@ package com.spring.localparking.api.service
 
 import com.spring.localparking.api.config.SeoulParkingApiClient
 import com.spring.localparking.api.dto.ApiConstants
+import com.spring.localparking.operatingHour.domain.DocumentOperatingHour
+import com.spring.localparking.operatingHour.domain.OperatingHour
+import com.spring.localparking.operatingHour.domain.TimeSlot
 import com.spring.localparking.parking.domain.*
 import com.spring.localparking.parking.repository.ParkingLotRepository
 import com.spring.localparking.parking.repository.ParkingLotSearchRepository
