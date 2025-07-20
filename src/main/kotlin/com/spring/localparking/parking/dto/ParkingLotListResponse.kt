@@ -16,7 +16,7 @@ data class ParkingLotListResponse(
 
 ) {
     companion object {
-        fun of(doc: ParkingLotDocument, curCapacity: Int?, isOpen: Boolean? ): ParkingLotListResponse {
+        fun of(doc: ParkingLotDocument, curCapacity: Int?): ParkingLotListResponse {
             return ParkingLotListResponse(
                 parkingCode = doc.parkingCode,
                 name = doc.name,
@@ -26,7 +26,7 @@ data class ParkingLotListResponse(
                 hourlyFee = doc.hourlyFee,
                 lat = doc.location.lat,
                 lon = doc.location.lon,
-                isOpen = isOpen,
+                isOpen = doc.isOpen,
                 curCapacity = curCapacity
             )
         }

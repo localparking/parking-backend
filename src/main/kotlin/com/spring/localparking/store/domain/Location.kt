@@ -30,8 +30,7 @@ class Location (
     )
     var jibeonAddress: JibeonAddress? = null,
 
-    var lat:Double?= null,
-    var lon:Double? = null
+    var lat:Double,
+    var lon:Double
 
-){
-}
+)
