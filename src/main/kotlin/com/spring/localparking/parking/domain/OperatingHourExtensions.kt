@@ -16,7 +16,7 @@ fun OperatingHour.is24Hours(day: DayOfWeek): Boolean =
  * 특정 시각(now) 기준 영업 중 여부 (overnight 포함).
  * timeSlots 비어 있으면 null.
  */
-fun OperatingHour.isOpenAt(now: LocalDateTime): Boolean? {
+fun OperatingHour.isOpened(now: LocalDateTime): Boolean? {
     if (timeSlots.isEmpty()) return null
     val day = now.dayOfWeek
     val t = now.toLocalTime()

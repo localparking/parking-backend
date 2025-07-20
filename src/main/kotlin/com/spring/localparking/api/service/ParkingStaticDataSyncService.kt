@@ -94,7 +94,7 @@ class ParkingStaticDataSyncService(
                 .filter { it.lat != null && it.lon != null }
                 .map { lot ->
                     val op = lot.operatingHour
-                    val isOpenNow: Boolean? = op?.isOpenAt(batchStart)
+                    val isOpenNow: Boolean? = op?.isOpened(batchStart)
                     val is24Today: Boolean = op?.is24Hours(batchStart.dayOfWeek) ?: false
 
                     val docHours = op?.timeSlots?.map {
@@ -144,23 +144,20 @@ class ParkingStaticDataSyncService(
             additionalTimeMin = info.additionalTime?.toIntOrNull()
         )
 
-    private fun buildOperatingHour(info: ParkingInfo): OperatingHour {
+    private fun buildOperatingHour(info: ParkingInfo): OperatingHour? {
         val op = OperatingHour()
 
-        // 평일
         addWeekdaySlots(info, op)
-        // 주말(토/일)
         addWeekendSlots(info, op)
-        // 공휴일 (현재 Sunday 중복 가능성 -> 동일 시간 중복 방지)
         addHolidaySlot(info, op)
 
-        return op
+        return if (op.timeSlots.isEmpty()) null else op
     }
 
     private fun addWeekdaySlots(info: ParkingInfo, op: OperatingHour) {
         val b = parseTime(info.weekdayBeginTime)
         val e = parseTime(info.weekdayEndTime)
-        if (b != null && e != null) {
+        if (b != null && e != null && b != e) {
             listOf(
                 DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
                 DayOfWeek.THURSDAY, DayOfWeek.FRIDAY
@@ -171,7 +168,7 @@ class ParkingStaticDataSyncService(
     private fun addWeekendSlots(info: ParkingInfo, op: OperatingHour) {
         val b = parseTime(info.weekendBeginTime)
         val e = parseTime(info.weekendEndTime)
-        if (b != null && e != null) {
+        if (b != null && e != null && b != e) {
             op.addTimeSlot(TimeSlot(dayOfWeek = DayOfWeek.SATURDAY, beginTime = b, endTime = e))
             op.addTimeSlot(TimeSlot(dayOfWeek = DayOfWeek.SUNDAY, beginTime = b, endTime = e))
         }
@@ -180,7 +177,7 @@ class ParkingStaticDataSyncService(
     private fun addHolidaySlot(info: ParkingInfo, op: OperatingHour) {
         val b = parseTime(info.holidayBeginTime)
         val e = parseTime(info.holidayEndTime)
-        if (b != null && e != null) {
+        if (b != null && e != null && b != e) {
             val dup = op.timeSlots.any {
                 it.dayOfWeek == DayOfWeek.SUNDAY && it.beginTime == b && it.endTime == e
             }

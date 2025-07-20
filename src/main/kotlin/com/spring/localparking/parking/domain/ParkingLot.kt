@@ -33,7 +33,7 @@ class ParkingLot (
     @OneToMany(mappedBy = "parkingLot", cascade = [CascadeType.ALL], orphanRemoval = true)
     val storeParkingLots: MutableSet<StoreParkingLot> = mutableSetOf()
 ) {
-    fun updateInfo(info: ParkingInfo, feePolicy: FeePolicy, operatingHour: OperatingHour) {
+    fun updateInfo(info: ParkingInfo, feePolicy: FeePolicy, operatingHour: OperatingHour?) {
         this.name = info.parkingName
         this.address = info.address
         this.parkingType = info.parkingType
@@ -48,7 +48,7 @@ class ParkingLot (
     }
 
     companion object {
-        fun from(info: ParkingInfo, feePolicy: FeePolicy, operatingHour: OperatingHour): ParkingLot {
+        fun from(info: ParkingInfo, feePolicy: FeePolicy, operatingHour: OperatingHour?): ParkingLot {
             return ParkingLot(
                 parkingCode = info.parkingCode,
                 name = info.parkingName,
