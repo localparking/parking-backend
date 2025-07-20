@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @Tag(name = "카테고리 컨트롤러", description = "카테고리 관련 API입니다.")
@@ -31,7 +32,7 @@ class CategoryController (
 
     @Operation(summary = "자식 카테고리 조회", description = "자식 카테고리를 조회하는 API입니다.")
     @GetMapping("/child")
-    fun getChildCategories(@AuthenticationPrincipal principal: CustomPrincipal, @PathVariable parentId: Long):
+    fun getChildCategories(@AuthenticationPrincipal principal: CustomPrincipal, @RequestParam parentId: Long):
             ResponseEntity<ResponseDto<CategoryResponse>> {
         val response = categoryService.getChildCategories(parentId)
         return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, response))
