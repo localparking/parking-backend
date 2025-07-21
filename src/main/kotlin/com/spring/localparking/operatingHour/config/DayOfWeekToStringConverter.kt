@@ -1,4 +1,4 @@
-package com.spring.localparking.parking.config
+package com.spring.localparking.operatingHour.config
 
 import org.springframework.core.convert.converter.Converter
 import org.springframework.data.convert.WritingConverter

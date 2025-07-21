@@ -1,5 +1,6 @@
 package com.spring.localparking.store.domain
 
+import com.spring.localparking.operatingHour.domain.OperatingHour
 import jakarta.persistence.*
 
 @Entity
@@ -10,49 +11,26 @@ data class Store(
     val id: Long = 0,
 
     @OneToMany(mappedBy = "store", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var categories: MutableList<StoreCategory> = mutableListOf(),
+    var categories: MutableSet<StoreCategory> = mutableSetOf(),
 
     @Column(nullable = false)
     val name: String,
 
-    @Column(nullable = false)
-    val address: String,
+    @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    @JoinColumn(name = "location_id")
+    var location: Location,
 
-    @Column(nullable = false)
-    val lat: Double,
-
-    @Column(nullable = false)
-    val lon: Double,
+    @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+    @JoinColumn(name = "operating_hour_id")
+    var operatingHour: OperatingHour? = null,
 
     val tel: String?,
-
-    @Column(name = "is_pet_friendly")
-    val isPetFriendly: Boolean?,
-
-    @Column(name = "website_url")
-    val websiteUrl: String?,
-
-    @Column(name = "operating_info")
-    val operatingInfo: String?,
-
-    @Column(name = "closed_days")
-    val closedDays: String?,
-
-    @Column(name = "has_nursing_room")
-    val hasNursingRoom: Boolean?,
-
-    @Column(name = "has_stroller_rental")
-    val hasStrollerRental: Boolean?,
-
-    @Column(name = "has_kids_zone")
-    val hasKidsZone: Boolean?,
-
-    @Column(name = "has_info")
-    val hasInfo: Boolean?,
 
     @Column(name = "is_coalition", nullable = false)
     val isCoalition: Boolean,
 
     @OneToMany(mappedBy = "store", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val storeParkingLots: MutableSet<StoreParkingLot> = mutableSetOf()
+    val storeParkingLots: MutableSet<StoreParkingLot> = mutableSetOf(),
+
+    val maxFreeMin: Int? = null
 )

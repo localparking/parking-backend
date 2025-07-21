@@ -1,4 +1,4 @@
-package com.spring.localparking.parking.domain
+package com.spring.localparking.operatingHour.domain
 
 import org.springframework.data.elasticsearch.annotations.Field
 import org.springframework.data.elasticsearch.annotations.FieldType

@@ -1,4 +1,4 @@
-package com.spring.localparking.parking.domain
+package com.spring.localparking.operatingHour.domain
 
 import jakarta.persistence.*
 import java.time.DayOfWeek
@@ -25,10 +25,12 @@ class TimeSlot(
     @JoinColumn(name = "operating_hour_id")
     var operatingHour: OperatingHour? = null
 ) {
-    fun contains(time: LocalTime): Boolean {
-        if (endTime.isBefore(beginTime)) {
-            return !time.isBefore(beginTime) || !time.isAfter(endTime)
+    fun isOvernight(): Boolean = endTime.isBefore(beginTime)
+
+    fun contains(time: LocalTime): Boolean =
+        if (isOvernight()) {
+            !time.isBefore(beginTime) || time.isBefore(endTime)
+        } else {
+            !time.isBefore(beginTime) && time.isBefore(endTime)
         }
-        return !time.isBefore(beginTime) && time.isBefore(endTime)
-    }
 }

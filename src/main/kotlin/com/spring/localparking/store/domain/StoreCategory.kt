@@ -1,8 +1,6 @@
 package com.spring.localparking.store.domain
 
-import com.spring.localparking.user.domain.Category
-import com.spring.localparking.user.domain.StoreCategoryId
-import com.spring.localparking.user.domain.User
+import com.spring.localparking.category.domain.Category
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.Id
@@ -23,6 +21,6 @@ class StoreCategory (
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
-    var category: Category
+    val category: Category
 
 )

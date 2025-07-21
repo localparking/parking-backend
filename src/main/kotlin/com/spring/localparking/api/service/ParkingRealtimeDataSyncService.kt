@@ -32,7 +32,7 @@ class ParkingRealtimeDataSyncService(
                         val totalCapacity = info.capacity?.toIntOrNull()
 
                         if (curCapacity != null && totalCapacity != null) {
-                            val status = calculateParkingStatus(curCapacity, curCapacity)
+                            val status = calculateParkingStatus(curCapacity, totalCapacity)
                             val key = "parking:realtime:${info.parkingCode}"
                             val values = mapOf(
                                 "curCapacity" to curCapacity.toString(),

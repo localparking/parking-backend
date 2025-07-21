@@ -1,4 +1,4 @@
-package com.spring.localparking.user.domain
+package com.spring.localparking.store.domain
 
 import java.io.Serializable
 

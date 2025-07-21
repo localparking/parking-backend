@@ -7,6 +7,7 @@ import com.nimbusds.jose.jwk.source.RemoteJWKSet
 import com.nimbusds.jose.proc.JWSVerificationKeySelector
 import com.nimbusds.jose.proc.SecurityContext
 import com.nimbusds.jwt.proc.DefaultJWTProcessor
+import com.spring.localparking.auth.dto.social.AppleLoginRequest
 import com.spring.localparking.auth.dto.social.KakaoUserMe
 import com.spring.localparking.global.dto.Provider
 import com.spring.localparking.user.domain.User
@@ -66,13 +67,13 @@ class SocialAuthService (
         require(claims.expirationTime.after(Date()))
         return JWT.decode(idToken)
     }
-    fun loginApple(req: String): User {
-        val jwt = verifyIdentityToken(req, appleClientId)
+    fun loginApple(req: AppleLoginRequest): User {
+        val jwt = verifyIdentityToken(req.identityToken, appleClientId)
         val sub = jwt.subject
         val email = jwt.getClaim("email").asString()
-
+        val nickname = req.fullName ?: email?.substringBefore('@') ?: sub
         return userRepository.findByProviderAndProviderId(Provider.APPLE, sub)
-            ?: userRepository.save(User.ofProvider(Provider.APPLE, sub, email ?: sub, email))
+            ?: userRepository.save(User.ofProvider(Provider.APPLE, sub, nickname, email))
     }
     fun loginAsGuest(): User {
         val guestId = "guest_${UUID.randomUUID()}"

@@ -29,14 +29,7 @@ class UserController (
         val userId = principal?.id ?: throw UnauthorizedException()
         val user = userRepository.findById(userId)
             .orElseThrow { UserNotFoundException() }
-
-        val userResponse = UserResponse(
-            email = user.email,
-            nickname = user.nickname,
-            provider = user.provider,
-            role = user.role
-        )
-
+        val userResponse = UserResponse.from(user)
         return ResponseEntity.ok(
             ResponseDto.from(SuccessCode.OK, userResponse)
         )

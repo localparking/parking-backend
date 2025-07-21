@@ -1,9 +1,8 @@
 package com.spring.localparking.parking.domain
 
+import com.spring.localparking.operatingHour.domain.DocumentOperatingHour
 import org.springframework.data.annotation.Id
-import org.springframework.data.elasticsearch.annotations.Document
-import org.springframework.data.elasticsearch.annotations.Field
-import org.springframework.data.elasticsearch.annotations.FieldType
+import org.springframework.data.elasticsearch.annotations.*
 import org.springframework.data.elasticsearch.core.geo.GeoPoint
 
 @Document(indexName = "parking_lot")
@@ -14,7 +13,10 @@ data class ParkingLotDocument(
     @Field(type = FieldType.Text)
     val name: String,
 
-    @Field(type = FieldType.Keyword)
+    @MultiField(
+        mainField = Field(type = FieldType.Text, analyzer = "nori"),
+        otherFields = [InnerField(suffix = "keyword", type = FieldType.Keyword)]
+    )
     val address: String?,
 
     val location: GeoPoint,
@@ -24,6 +26,9 @@ data class ParkingLotDocument(
 
     @Field(type = FieldType.Boolean)
     val isRealtime: Boolean,
+
+    @Field(type = FieldType.Boolean)
+    val isOpen: Boolean? = null,
 
     @Field(type = FieldType.Boolean)
     val is24Hours: Boolean,

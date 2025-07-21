@@ -3,6 +3,7 @@ package com.spring.localparking.auth.controller
 
 import com.spring.localparking.auth.dto.TokenRequest
 import com.spring.localparking.auth.dto.TokenResponse
+import com.spring.localparking.auth.dto.social.AppleLoginRequest
 import com.spring.localparking.auth.exception.UnauthorizedException
 import com.spring.localparking.auth.security.CustomPrincipal
 import com.spring.localparking.auth.service.TokenService
@@ -13,8 +14,6 @@ import com.spring.localparking.global.util.JwtUtil
 import com.spring.localparking.user.exception.UserNotFoundException
 import com.spring.localparking.user.repository.UserRepository
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.responses.ApiResponse
-import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.HttpHeaders
@@ -31,15 +30,8 @@ class AuthController(
     private val socialAuthService: SocialAuthService,
     private val tokenService: TokenService
 ) {
+
     @Operation(summary = "Access Token 갱신", description = "Access Token을 갱신하는 API입니다.")
-    @ApiResponses(
-        value = [
-            ApiResponse(responseCode = "200", description = "Access Token 갱신 성공"),
-            ApiResponse(responseCode = "401", description = "인증 실패: 유효하지 않은 토큰"),
-            ApiResponse(responseCode = "404", description = "사용자 정보 없음: 해당 사용자를 찾을 수 없음"),
-            ApiResponse(responseCode = "500", description = "서버 오류: 토큰 갱신 중 오류 발생")
-        ]
-    )
     @PostMapping("/refresh")
     fun reissueRefreshToken(
         @AuthenticationPrincipal principal: CustomPrincipal
@@ -64,14 +56,6 @@ class AuthController(
     }
 
     @Operation(summary = "카카오 앱 소셜 로그인", description = "카카오 앱 소셜 로그인을 위한 API입니다.")
-    @ApiResponses(
-        value = [
-            ApiResponse(responseCode = "200", description = "로그인 성공"),
-            ApiResponse(responseCode = "401", description = "인증 실패: 잘못된 토큰"),
-            ApiResponse(responseCode = "404", description = "사용자 정보 없음"),
-            ApiResponse(responseCode = "500", description = "서버 오류")
-        ]
-    )
     @PostMapping("/login/kakao")
     fun kakao(@RequestBody @Valid req: TokenRequest
     ): ResponseEntity<ResponseDto<TokenResponse>> {
@@ -86,18 +70,10 @@ class AuthController(
     }
 
     @Operation(summary = "애플 앱 소셜 로그인", description = "애플 앱 소셜 로그인을 위한 API입니다.")
-    @ApiResponses(
-        value = [
-            ApiResponse(responseCode = "200", description = "로그인 성공"),
-            ApiResponse(responseCode = "401", description = "인증 실패: 잘못된 토큰"),
-            ApiResponse(responseCode = "404", description = "사용자 정보 없음"),
-            ApiResponse(responseCode = "500", description = "서버 오류")
-        ]
-    )
     @PostMapping("/login/apple")
-    fun apple(@RequestBody @Valid req: TokenRequest
+    fun apple(@RequestBody @Valid req: AppleLoginRequest
     ): ResponseEntity<ResponseDto<TokenResponse>> {
-        val user = socialAuthService.loginApple(req.token)
+        val user = socialAuthService.loginApple(req)
         val accessToken = jwtUtil.generateAccessToken(user.id!!, user.role.value)
         val refreshToken = jwtUtil.generateRefreshToken(user.id!!)
         tokenService.saveRefreshToken(user.id!!, refreshToken)
@@ -106,13 +82,8 @@ class AuthController(
             ResponseDto.from(SuccessCode.USER_LOGGED_IN, res)
         )
     }
+
     @Operation(summary = "게스트 로그인", description = "게스트 로그인을 위한 API입니다.")
-    @ApiResponses(
-        value = [
-            ApiResponse(responseCode = "200", description = "로그인 성공"),
-            ApiResponse(responseCode = "500", description = "서버 오류")
-        ]
-    )
     @PostMapping("/login/guest")
     fun guestLogin(): ResponseEntity<ResponseDto<TokenResponse>> {
         val guestUser = socialAuthService.loginAsGuest()

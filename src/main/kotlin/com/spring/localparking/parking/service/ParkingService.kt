@@ -4,6 +4,7 @@ import com.spring.global.exception.ErrorCode
 import com.spring.localparking.global.dto.PageResponse
 import com.spring.localparking.global.dto.PagingInfo
 import com.spring.localparking.global.exception.CustomException
+import com.spring.localparking.operatingHour.domain.isOpened
 import com.spring.localparking.parking.dto.AssociatedStoreDto
 import com.spring.localparking.parking.dto.ParkingLotDetailResponse
 import com.spring.localparking.parking.dto.ParkingLotListResponse
@@ -13,6 +14,7 @@ import com.spring.localparking.parking.repository.ParkingLotSearchRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class ParkingLotService(
@@ -37,24 +39,13 @@ class ParkingLotService(
         val content = documents.map { doc ->
             val realtimeInfo = realtimeInfoMap[doc.parkingCode]
             val curCapacity = realtimeInfo?.second
-            val isOpen = isParkingLotOpenNow(doc.parkingCode)
-            ParkingLotListResponse.of(doc, doc.congestion, curCapacity, isOpen)
+            ParkingLotListResponse.of(doc, curCapacity)
         }
 
         val pagingInfo = PagingInfo(page = pageResult.number, totalPages = pageResult.totalPages)
         return PageResponse(content, pagingInfo)
     }
 
-
-    private fun isParkingLotOpenNow(parkingCode: String): Boolean? {
-        val parkingLot = parkingLotRepository.findById(parkingCode).orElse(null)
-
-        if (parkingLot == null) {
-            return null
-        }
-
-        return parkingLot.operatingHour?.isOpenNow()
-    }
 
     fun getDetail(parkingCode: String): ParkingLotDetailResponse {
         val parkingLot = parkingLotRepository.findById(parkingCode)
@@ -64,15 +55,18 @@ class ParkingLotService(
         val congestion = realtimeInfo?.first
         val curCapacity = realtimeInfo?.second
 
-        val isOpen = isParkingLotOpenNow(parkingCode)
+        val associatedStores = parkingLot.storeParkingLots.map { sp ->
+            val store = sp.store
+            AssociatedStoreDto(
+                storeId = store.id,
+                categoryNames = store.categories
+                    .map { it.category.name },
+                storeName = store.name,
+                isOpen = store.operatingHour?.isOpened(LocalDateTime.now())
+            )
+        }
 
-        val mockStores = listOf(
-            AssociatedStoreDto(storeId = 1L, categoryName = "한식", storeName = "강남 할머니 칼국수", isOpen = true),
-            AssociatedStoreDto(storeId = 2L, categoryName = "카페", storeName = "스타벅스 강남역점", isOpen = false),
-            AssociatedStoreDto(storeId = 3L, categoryName = "일식", storeName = "호랑이 초밥", isOpen = null)
-        )
-
-        return ParkingLotDetailResponse.from(parkingLot, congestion, curCapacity, isOpen, mockStores)
+        return ParkingLotDetailResponse.from(parkingLot, congestion, curCapacity, associatedStores)
     }
 
     private fun getRealtimeInfo(parkingCodes: List<String>): Map<String, Pair<String?, Int?>> {

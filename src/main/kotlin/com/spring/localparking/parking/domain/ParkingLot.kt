@@ -1,6 +1,7 @@
 package com.spring.localparking.parking.domain
 
 import com.spring.localparking.api.dto.ParkingInfo
+import com.spring.localparking.operatingHour.domain.OperatingHour
 import com.spring.localparking.store.domain.StoreParkingLot
 import jakarta.persistence.*
 
@@ -19,6 +20,7 @@ class ParkingLot (
     var address: String? = null,
     var lat: Double? = null,
     var lon: Double? = null,
+    var hourlyFee: Int? = null,
     var isCoalition: Boolean = false,
 
     @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
@@ -32,7 +34,7 @@ class ParkingLot (
     @OneToMany(mappedBy = "parkingLot", cascade = [CascadeType.ALL], orphanRemoval = true)
     val storeParkingLots: MutableSet<StoreParkingLot> = mutableSetOf()
 ) {
-    fun updateInfo(info: ParkingInfo, feePolicy: FeePolicy, operatingHour: OperatingHour) {
+    fun updateInfo(info: ParkingInfo, feePolicy: FeePolicy, operatingHour: OperatingHour?, hourlyFee: Int?) {
         this.name = info.parkingName
         this.address = info.address
         this.parkingType = info.parkingType
@@ -44,10 +46,11 @@ class ParkingLot (
         this.lon = info.longitude?.toDoubleOrNull()
         this.feePolicy = feePolicy
         this.operatingHour = operatingHour
+        this.hourlyFee = hourlyFee
     }
 
     companion object {
-        fun from(info: ParkingInfo, feePolicy: FeePolicy, operatingHour: OperatingHour): ParkingLot {
+        fun from(info: ParkingInfo, feePolicy: FeePolicy, operatingHour: OperatingHour?, hourlyFee: Int?): ParkingLot {
             return ParkingLot(
                 parkingCode = info.parkingCode,
                 name = info.parkingName,
@@ -60,7 +63,8 @@ class ParkingLot (
                 lat = info.latitude?.toDoubleOrNull(),
                 lon = info.longitude?.toDoubleOrNull(),
                 feePolicy = feePolicy,
-                operatingHour = operatingHour
+                operatingHour = operatingHour,
+                hourlyFee = hourlyFee
             )
         }
     }

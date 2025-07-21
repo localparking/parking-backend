@@ -1,11 +1,14 @@
-package com.spring.localparking.user.domain
+package com.spring.localparking.category.domain
 
 import com.spring.localparking.store.domain.StoreCategory
+import com.spring.localparking.user.domain.UserCategory
 import jakarta.persistence.*
 
 @Entity
 @Table
 class Category (
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long,
     @Column(nullable = false, unique = true)
     var code : String,
     @Column(nullable = false)
@@ -20,9 +23,4 @@ class Category (
 
     @OneToMany(mappedBy = "category")
     var stores: MutableList<StoreCategory> = mutableListOf()
-){
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null
-        protected set
-
-}
+)

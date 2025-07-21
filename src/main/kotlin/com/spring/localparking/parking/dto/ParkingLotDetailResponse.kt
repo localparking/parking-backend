@@ -1,8 +1,12 @@
 package com.spring.localparking.parking.dto
 
+import com.spring.localparking.operatingHour.domain.is24Hours
+import com.spring.localparking.operatingHour.domain.openStatus
+import com.spring.localparking.operatingHour.dto.GroupedOperatingHoursDto
+import com.spring.localparking.operatingHour.dto.buildGroupedWeek
 import com.spring.localparking.parking.domain.ParkingLot
-import java.time.DayOfWeek
-import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 data class ParkingLotDetailResponse(
@@ -20,45 +24,45 @@ data class ParkingLotDetailResponse(
     val lat: Double?,
     val lon: Double?,
     val feePolicy: FeePolicyDto,
-    val operatingHours: List<OperatingHoursDto>,
+    val operatingHours: List<GroupedOperatingHoursDto>,
     val associatedStores: List<AssociatedStoreDto>
 ) {
     companion object {
-        fun from(entity: ParkingLot, congestion: String?, curCapacity: Int?,
-                 isOpen: Boolean?, associatedStores: List<AssociatedStoreDto>): ParkingLotDetailResponse {
-            val operatingHour = entity.operatingHour
-            val operatingHoursList = mutableListOf<OperatingHoursDto>()
-            val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+        private val TIME_FMT = DateTimeFormatter.ofPattern("HH:mm")
+        fun from(
+            entity: ParkingLot,
+            congestion: String?,
+            curCapacity: Int?,
+            associatedStores: List<AssociatedStoreDto>,
+            now: LocalDateTime = LocalDateTime.now()
+        ): ParkingLotDetailResponse {
 
-            val weekdaySlot = operatingHour?.timeSlots?.find { it.dayOfWeek == DayOfWeek.MONDAY }
-            operatingHoursList.add(OperatingHoursDto.from("평일", weekdaySlot))
-
-            val weekendSlot = operatingHour?.timeSlots?.find { it.dayOfWeek == DayOfWeek.SATURDAY }
-            operatingHoursList.add(OperatingHoursDto.from("주말", weekendSlot))
-
-            val holidaySlot = operatingHour?.timeSlots?.find { it.dayOfWeek == DayOfWeek.SUNDAY }
-            operatingHoursList.add(OperatingHoursDto.from("공휴일", holidaySlot))
-
-            val today = LocalDate.now().dayOfWeek
-            val todaySlot = operatingHour?.timeSlots?.find { it.dayOfWeek == today }
-            val todayClosingTime = todaySlot?.endTime?.format(timeFormatter)
+            val op = entity.operatingHour
+            val (open, rawClosing) = op?.openStatus(now) ?: (null to null)
+            val is24 = op?.is24Hours(now.dayOfWeek) == true
+            val closingStr = when {
+                open == true && is24 -> "24:00"
+                rawClosing != null && rawClosing == LocalTime.MAX -> "24:00"
+                else -> rawClosing?.format(TIME_FMT)
+            }
+            val hours = buildGroupedWeek(op)
 
             return ParkingLotDetailResponse(
                 parkingCode = entity.parkingCode,
                 name = entity.name,
                 address = entity.address,
-                isOpen = isOpen,
+                isOpen = open,
                 capacity = entity.capacity,
                 curCapacity = curCapacity,
                 congestion = congestion,
-                todayClosingTime = todayClosingTime,
+                todayClosingTime = closingStr,
                 isRealtime = entity.isRealtime,
                 isFree = entity.isFree,
                 tel = entity.tel,
                 lat = entity.lat,
                 lon = entity.lon,
                 feePolicy = FeePolicyDto.from(entity.feePolicy),
-                operatingHours = operatingHoursList,
+                operatingHours = hours,
                 associatedStores = associatedStores
             )
         }
