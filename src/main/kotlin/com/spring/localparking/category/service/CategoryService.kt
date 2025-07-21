@@ -19,12 +19,13 @@ class CategoryService (
         })
     }
 
-    fun getChildCategories(parentId: Long): CategoryResponse {
-        val childCategories = categoryRepository.findAllByParentId(parentId)
-        return CategoryResponse(childCategories.map {
+    fun getAllCategories(): CategoryResponse {
+        val categories = categoryRepository.findAllBy()
+        return CategoryResponse(categories.map {
             CategoryDto(
                 categoryId = it.id!!,
-                categoryName = it.name
+                categoryName = it.name,
+                parentId = it.parent?.id
             )
         })
     }

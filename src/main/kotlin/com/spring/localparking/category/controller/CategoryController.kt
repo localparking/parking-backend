@@ -10,9 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @Tag(name = "카테고리 컨트롤러", description = "카테고리 관련 API입니다.")
@@ -22,7 +20,7 @@ class CategoryController (
     private val categoryService: CategoryService
 ){
 
-    @Operation(summary = "부모 카테고리 조회", description = "부모 카테고리를 조회하는 API입니다.")
+    @Operation(summary = "상위 카테고리 조회", description = "상위 카테고리를 조회하는 API입니다.")
     @GetMapping("/parent")
     fun getCategories(@AuthenticationPrincipal principal: CustomPrincipal):
             ResponseEntity<ResponseDto<CategoryResponse>> {
@@ -30,11 +28,11 @@ class CategoryController (
         return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, response))
     }
 
-    @Operation(summary = "자식 카테고리 조회", description = "자식 카테고리를 조회하는 API입니다.")
-    @GetMapping("/child")
-    fun getChildCategories(@AuthenticationPrincipal principal: CustomPrincipal, @RequestParam parentId: Long):
+    @Operation(summary = "전체 카테고리 조회", description = "전체 카테고리를 조회하는 API입니다.")
+    @GetMapping("/all")
+    fun getChildCategories(@AuthenticationPrincipal principal: CustomPrincipal):
             ResponseEntity<ResponseDto<CategoryResponse>> {
-        val response = categoryService.getChildCategories(parentId)
+        val response = categoryService.getAllCategories()
         return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, response))
     }
 }
