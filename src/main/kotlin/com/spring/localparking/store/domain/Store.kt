@@ -11,7 +11,7 @@ data class Store(
     val id: Long = 0,
 
     @OneToMany(mappedBy = "store", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var categories: MutableList<StoreCategory> = mutableListOf(),
+    var categories: MutableSet<StoreCategory> = mutableSetOf(),
 
     @Column(nullable = false)
     val name: String,

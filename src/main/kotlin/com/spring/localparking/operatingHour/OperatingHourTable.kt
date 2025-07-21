@@ -20,14 +20,11 @@ private val KOR_DAY = mapOf(
 data class OperatingSlotDto(
     val begin: String,
     val end: String,
-    val overnight: Boolean
 )
 
 data class DailyOperatingDto(
-    val dayOfWeek: String,
     val dayLabel: String,
-    val slots: List<OperatingSlotDto>,
-    val isClosed: Boolean
+    val slots: List<OperatingSlotDto>
 )
 
 object OperatingHourPresenter {
@@ -48,25 +45,20 @@ object OperatingHourPresenter {
                 .sortedWith(compareBy<NormalizedSlot> { it.begin }.thenBy { it.end })
 
             DailyOperatingDto(
-                dayOfWeek = dow.name,
                 dayLabel = KOR_DAY[dow] ?: dow.name,
                 slots = ordered.map {
                     OperatingSlotDto(
                         begin = it.begin.format(TIME_FMT),
-                        end = it.end.format(TIME_FMT),
-                        overnight = it.overnight
+                        end = it.end.format(TIME_FMT)
                     )
                 },
-                isClosed = false
             )
         }
     }
 
     private fun emptyDay(dow: DayOfWeek) = DailyOperatingDto(
-        dayOfWeek = dow.name,
         dayLabel = KOR_DAY[dow] ?: dow.name,
         slots = emptyList(),
-        isClosed = true
     )
 
     private fun mergeNormalSameDay(list: List<NormalizedSlot>): List<NormalizedSlot> {

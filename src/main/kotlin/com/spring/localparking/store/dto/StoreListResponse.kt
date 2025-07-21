@@ -5,7 +5,6 @@ import com.spring.localparking.store.domain.StoreDocument
 data class StoreListResponse(
     val storeId: Long,
     val name: String,
-    val primaryCategoryName: String?,
     val categoryNames: List<String>,
     val address: String?,
     val lat: Double,
@@ -14,16 +13,15 @@ data class StoreListResponse(
     val isCoalition: Boolean = false
 ) {
     companion object {
-        fun of(doc: StoreDocument, isOpen: Boolean?): StoreListResponse {
+        fun of(doc: StoreDocument): StoreListResponse {
             return StoreListResponse(
                 storeId = doc.id,
                 name = doc.name,
-                primaryCategoryName = doc.primaryCategoryName,
                 categoryNames = doc.categoryNames,
                 address = doc.fullDoroAddress ?: doc.fullJibeonAddress,
                 lat = doc.location.lat,
                 lon = doc.location.lon,
-                isOpen = isOpen,
+                isOpen = doc.isOpen,
                 isCoalition = doc.isCoalition
             )
         }

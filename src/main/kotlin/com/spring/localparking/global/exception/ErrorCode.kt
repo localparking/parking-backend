@@ -43,4 +43,7 @@ enum class ErrorCode(
 
     //TYPE
     SORT_TYPE_NOT_FOUND(HttpStatus.BAD_REQUEST, "유효하지 않은 정렬 타입입니다."),
+
+    // STORE
+    STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 가게입니다."),
 }

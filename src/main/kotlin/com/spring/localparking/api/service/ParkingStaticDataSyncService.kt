@@ -61,10 +61,10 @@ class ParkingStaticDataSyncService(
                 infos.forEach { info ->
                     val feePolicy = buildFeePolicy(info)
                     val op = buildOperatingHour(info)
-
+                    val hourlyFee = calculateHourlyFee(feePolicy)
                     val lot = existingMap[info.parkingCode]?.apply {
-                        updateInfo(info, feePolicy, op)
-                    } ?: ParkingLot.from(info, feePolicy, op)
+                        updateInfo(info, feePolicy, op, hourlyFee)
+                    } ?: ParkingLot.from(info, feePolicy, op,hourlyFee)
 
                     toPersist += lot
                 }

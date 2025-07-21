@@ -1,43 +1,58 @@
 package com.spring.localparking.store
 
 import com.spring.localparking.operatingHour.domain.DocumentOperatingHour
+import com.spring.localparking.operatingHour.domain.is24Hours
+import com.spring.localparking.operatingHour.domain.isOpened
 import com.spring.localparking.store.domain.Store
 import com.spring.localparking.store.domain.StoreDocument
 import org.springframework.data.elasticsearch.core.geo.GeoPoint
+import java.time.LocalDateTime
 
 object StoreDocumentMapper {
-    fun toDocument(store: Store): StoreDocument? {
-        val loc = store.location ?: return null
-        val lat = loc.lat ?: return null
-        val lon = loc.lon ?: return null
-        val catIds = store.categories.mapNotNull { it.category?.id }
-        val catNames = store.categories.mapNotNull { it.category?.name }
-        val primaryId = catIds.firstOrNull()
-        val primaryName = catNames.firstOrNull()
+    fun toDocument(store: Store, now: LocalDateTime = LocalDateTime.now()): StoreDocument? {
+        val loc = store.location
+        val lat = loc.lat
+        val lon = loc.lon
 
-        val docHours = store.operatingHour?.timeSlots?.map {
-            DocumentOperatingHour(
-                dayOfWeek = it.dayOfWeek,
-                beginTime = it.beginTime.hour * 100 + it.beginTime.minute,
-                endTime = it.endTime.hour * 100 + it.endTime.minute,
-                isOvernight = it.endTime.isBefore(it.beginTime)
-            )
-        } ?: emptyList()
+        val categories = store.categories
+        val categoryIds = categories
+            .map { it.category.id }
+            .distinct()
+        val categoryNames = categories
+            .map { it.category.name }
+            .filter { it.isNotBlank() }
+            .distinct()
+
+        val op = store.operatingHour
+        val isOpen = op?.isOpened(now)
+        val is24 = op?.is24Hours(now.dayOfWeek) ?: false
+
+        val docHours = op?.timeSlots
+            ?.filter { slot -> slot.beginTime != slot.endTime }
+            ?.map { slot ->
+                DocumentOperatingHour(
+                    dayOfWeek = slot.dayOfWeek,
+                    beginTime = slot.beginTime.hour * 100 + slot.beginTime.minute,
+                    endTime = slot.endTime.hour * 100 + slot.endTime.minute,
+                    isOvernight = slot.isOvernight()
+                )
+            }.orEmpty()
+
 
         return StoreDocument(
             id = store.id,
             name = store.name,
-            categoryIds = catIds,
-            categoryNames = catNames,
-            primaryCategoryId = primaryId,
-            primaryCategoryName = primaryName,
+            categoryIds = categoryIds,
+            categoryNames = categoryNames,
             fullDoroAddress = loc.doroAddress?.fullAddress,
             fullJibeonAddress = loc.jibeonAddress?.fullAddress,
             sido = loc.doroAddress?.sido,
             sigungu = loc.doroAddress?.sigungu,
+            location = GeoPoint(lat, lon),
             isCoalition = store.isCoalition,
             maxFreeMin = store.maxFreeMin,
-            location = GeoPoint(lat, lon),
+            isOpen = isOpen,
+            is24Hours = is24,
             operatingHours = docHours
         )
     }
