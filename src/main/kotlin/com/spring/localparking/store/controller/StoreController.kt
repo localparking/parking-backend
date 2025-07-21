@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*
 class StoreController(
     private val storeService: StoreService
 ) {
-    @Operation(summary = "지도 기반 주차장 검색", description = "지도에서 주차장을 검색하는 API입니다.")
+    @Operation(summary = "지도 기반 가게 검색", description = "지도에서 가게를 검색하는 API입니다.")
     @PostMapping("/map/search")
     fun search(@AuthenticationPrincipal principal: CustomPrincipal, @RequestBody request: StoreSearchRequest):
         ResponseEntity<ResponseDto<PageResponse<StoreListResponse>>> {

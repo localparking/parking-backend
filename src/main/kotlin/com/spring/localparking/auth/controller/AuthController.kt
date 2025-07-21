@@ -82,17 +82,4 @@ class AuthController(
             ResponseDto.from(SuccessCode.USER_LOGGED_IN, res)
         )
     }
-
-    @Operation(summary = "게스트 로그인", description = "게스트 로그인을 위한 API입니다.")
-    @PostMapping("/login/guest")
-    fun guestLogin(): ResponseEntity<ResponseDto<TokenResponse>> {
-        val guestUser = socialAuthService.loginAsGuest()
-        val accessToken = jwtUtil.generateAccessToken(guestUser.id!!, guestUser.role.value)
-        val refreshToken = jwtUtil.generateRefreshToken(guestUser.id!!)
-        tokenService.saveRefreshToken(guestUser.id!!, refreshToken)
-        val response = TokenResponse(accessToken, refreshToken)
-        return ResponseEntity.ok(
-            ResponseDto.from(SuccessCode.USER_LOGGED_IN, response)
-        )
-    }
 }

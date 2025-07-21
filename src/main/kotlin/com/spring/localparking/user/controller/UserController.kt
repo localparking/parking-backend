@@ -4,7 +4,7 @@ import com.spring.localparking.auth.exception.UnauthorizedException
 import com.spring.localparking.auth.security.CustomPrincipal
 import com.spring.localparking.global.response.ResponseDto
 import com.spring.localparking.global.response.SuccessCode
-import com.spring.localparking.user.dto.UserResponse
+import com.spring.localparking.user.dto.UserInfoResponse
 import com.spring.localparking.user.exception.UserNotFoundException
 import com.spring.localparking.user.repository.UserRepository
 import io.swagger.v3.oas.annotations.Operation
@@ -25,13 +25,13 @@ class UserController (
     @GetMapping("/my-info")
     fun getMyInfo(
         @AuthenticationPrincipal principal: CustomPrincipal?
-    ): ResponseEntity<ResponseDto<UserResponse>> {
+    ): ResponseEntity<ResponseDto<UserInfoResponse>> {
         val userId = principal?.id ?: throw UnauthorizedException()
         val user = userRepository.findById(userId)
             .orElseThrow { UserNotFoundException() }
-        val userResponse = UserResponse.from(user)
+        val userInfoResponse = UserInfoResponse.from(user)
         return ResponseEntity.ok(
-            ResponseDto.from(SuccessCode.OK, userResponse)
+            ResponseDto.from(SuccessCode.OK, userInfoResponse)
         )
     }
 }
