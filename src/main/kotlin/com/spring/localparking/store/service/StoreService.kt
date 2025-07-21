@@ -5,6 +5,8 @@ import com.spring.localparking.category.service.CategoryResolveService
 import com.spring.localparking.global.dto.PageResponse
 import com.spring.localparking.global.dto.PagingInfo
 import com.spring.localparking.global.exception.CustomException
+import com.spring.localparking.operatingHour.domain.isOpened
+import com.spring.localparking.parking.dto.AssociatedStoreDto
 import com.spring.localparking.store.domain.Store
 import com.spring.localparking.store.dto.AssociatedParkingLotDto
 import com.spring.localparking.store.dto.StoreDetailResponse
@@ -15,6 +17,7 @@ import com.spring.localparking.store.repository.StoreSearchRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class StoreService(
@@ -41,12 +44,24 @@ class StoreService(
             ?: throw CustomException(ErrorCode.STORE_NOT_FOUND)
         val associatedParkingLots = store.storeParkingLots.map { sp ->
             val lot = sp.parkingLot
+            val otherStores = lot.storeParkingLots
+                .filter { otherSp -> otherSp.store.id != store.id }
+                .map { otherSp ->
+                    val otherStore = otherSp.store
+                    AssociatedStoreDto(
+                        storeId = otherStore.id,
+                        categoryNames = otherStore.categories.map { it.category.name },
+                        storeName = otherStore.name,
+                        isOpen = otherStore.operatingHour?.isOpened(LocalDateTime.now())
+                    )
+                }
             AssociatedParkingLotDto(
                 parkingCode = lot.parkingCode,
                 name = lot.name,
                 hourlyFee = lot.hourlyFee,
                 capacity = lot.capacity,
                 curCapacity = getRealtimeInfo(listOf(lot.parkingCode))[lot.parkingCode],
+                otherStores = otherStores
             )
         }
         return StoreDetailResponse.from(
