@@ -4,7 +4,7 @@ import com.spring.localparking.global.dto.Provider
 import com.spring.localparking.global.dto.Role
 import com.spring.localparking.user.domain.User
 
-data class UserResponse(
+data class UserInfoResponse(
     val email: String,
     val nickname: String,
     val provider: Provider,
@@ -16,7 +16,7 @@ data class UserResponse(
     val weight: String?,
 ){
     companion object {
-        fun from(user: User) = UserResponse(
+        fun from(user: User) = UserInfoResponse(
             email = user.email,
             nickname = user.nickname,
             provider = user.provider,
