@@ -24,7 +24,7 @@ data class ParkingLotDetailResponse(
     val lat: Double?,
     val lon: Double?,
     val feePolicy: FeePolicyDto,
-    val operatingHours: List<GroupedOperatingHoursDto>,
+    val operatingTable: List<GroupedOperatingHoursDto>,
     val associatedStores: List<AssociatedStoreDto>
 ) {
     companion object {
@@ -42,7 +42,7 @@ data class ParkingLotDetailResponse(
             val is24 = op?.is24Hours(now.dayOfWeek) == true
             val closingStr = when {
                 open == true && is24 -> "24:00"
-                rawClosing != null && rawClosing == LocalTime.MAX -> "24:00"
+                rawClosing != null && (rawClosing == LocalTime.MAX || rawClosing == LocalTime.MIDNIGHT || (rawClosing.hour == 23 && rawClosing.minute == 59)) -> "24:00"
                 else -> rawClosing?.format(TIME_FMT)
             }
             val hours = buildGroupedWeek(op)
@@ -62,7 +62,7 @@ data class ParkingLotDetailResponse(
                 lat = entity.lat,
                 lon = entity.lon,
                 feePolicy = FeePolicyDto.from(entity.feePolicy),
-                operatingHours = hours,
+                operatingTable = hours,
                 associatedStores = associatedStores
             )
         }

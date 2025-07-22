@@ -34,36 +34,30 @@ class StoreSearchRepositoryImpl(
                 root.bool { bool ->
                     val filters = mutableListOf<Query>()
 
-                    // 2km 고정 거리 필터
+                    // 1. 기본 필터 추가
                     filters += geoDistanceFilter(request.lat, request.lon)
 
-                    // 카테고리 (이미 root 포함/미포함 결정된 집합)
                     categoryFilterIds?.takeIf { it.isNotEmpty() }?.let { ids ->
                         filters += termsFilter("categoryIds", ids)
                     }
-
-                    // 무료 주차 분 (이상)
                     request.maxFreeMin?.let { mf ->
                         filters += rangeGte("maxFreeMin", mf)
                     }
-
-                    // 동적 시간 필터 사용 여부 판단
-                    val useSpecificCheckTime =
-                        !request.checkDayOfWeek.isNullOrBlank() && !request.checkTime.isNullOrBlank()
-
-                    // 스냅샷 isOpen (색인필드) 필터: 특정시간 쿼리 안 쓰는 경우에만
-                    if (request.isOpen == true && !useSpecificCheckTime) {
-                        filters += termFilter("isOpen", true)
-                    }
-
-                    // 24시간 필터
                     if (request.is24Hours == true) {
                         filters += termFilter("is24Hours", true)
                     }
 
-                    // 특정 시각 혹은 isOpen+시각 조합 → nested 시간 기반 재계산
-                    if (useSpecificCheckTime || (request.isOpen == true && useSpecificCheckTime)) {
-                        addOperatingHoursFilter(filters, request, useSpecificCheckTime)
+                    // 2. 시간 관련 필터 로직 수정
+                    val useSpecificCheckTime =
+                        !request.checkDayOfWeek.isNullOrBlank() && !request.checkTime.isNullOrBlank()
+
+                    // 특정 시간 필터가 있으면, 항상 해당 시간 기준으로 필터링
+                    if (useSpecificCheckTime) {
+                        addOperatingHoursFilter(filters, request)
+                    }
+                    // 특정 시간 필터가 없고, isOpen 필터만 있을 경우
+                    else if (request.isOpen != null) {
+                        filters += termFilter("isOpen", request.isOpen)
                     }
 
                     bool.filter(filters)
@@ -116,26 +110,20 @@ class StoreSearchRepositoryImpl(
 
     private fun addOperatingHoursFilter(
         filters: MutableList<Query>,
-        request: StoreSearchRequest,
-        useSpecificCheckTime: Boolean
+        request: StoreSearchRequest
     ) {
-        val (checkDay, checkTimeInt) = if (useSpecificCheckTime) {
-            val day = DayOfWeek.valueOf(request.checkDayOfWeek!!.uppercase())
-            val t = LocalTime.parse(request.checkTime!!, DateTimeFormatter.ofPattern("HHmm"))
-            day to (t.hour * 100 + t.minute)
-        } else {
-            val now = LocalDate.now()
-            val t = LocalTime.now()
-            now.dayOfWeek to (t.hour * 100 + t.minute)
-        }
+        // 이 함수는 checkDayOfWeek와 checkTime이 유효할 때만 호출됨
+        val day = DayOfWeek.valueOf(request.checkDayOfWeek!!.uppercase())
+        val t = LocalTime.parse(request.checkTime!!, DateTimeFormatter.ofPattern("HHmm"))
+        val checkTimeInt = t.hour * 100 + t.minute
 
-        val yesterday = checkDay.minus(1)
+        val yesterday = day.minus(1)
 
         val isOpenQuery = Query.of { f ->
             f.bool { b ->
                 b.should(
-                    createOperatingHourQuery(checkDay, false, beginLte = checkTimeInt, endGt = checkTimeInt),
-                    createOperatingHourQuery(checkDay, true, beginLte = checkTimeInt),
+                    createOperatingHourQuery(day, false, beginLte = checkTimeInt, endGt = checkTimeInt),
+                    createOperatingHourQuery(day, true, beginLte = checkTimeInt),
                     createOperatingHourQuery(yesterday, true, endGt = checkTimeInt)
                 ).minimumShouldMatch("1")
             }
