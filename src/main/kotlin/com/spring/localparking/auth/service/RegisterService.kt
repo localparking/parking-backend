@@ -12,8 +12,6 @@ import com.spring.localparking.global.dto.Weight
 import com.spring.localparking.global.exception.CustomException
 import com.spring.localparking.user.domain.TermAgreement
 import com.spring.localparking.user.domain.UserCategory
-import com.spring.localparking.user.dto.CategoryDto
-import com.spring.localparking.user.dto.CategoryResponse
 import com.spring.localparking.user.exception.UserNotFoundException
 import com.spring.localparking.category.repository.CategoryRepository
 import com.spring.localparking.user.repository.TermAgreementRepository
