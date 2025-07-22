@@ -4,6 +4,7 @@ import com.spring.localparking.operatingHour.domain.OperatingHour
 import com.spring.localparking.operatingHour.domain.normalizedSlots
 import com.spring.localparking.operatingHour.domain.NormalizedSlot
 import java.time.DayOfWeek
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 private val TIME_FMT = DateTimeFormatter.ofPattern("HH:mm")
@@ -23,7 +24,7 @@ data class OperatingSlotDto(
 )
 
 data class DailyOperatingDto(
-    val dayLabel: String,
+    val label: String,
     val slots: List<OperatingSlotDto>
 )
 
@@ -45,11 +46,14 @@ object OperatingHourPresenter {
                 .sortedWith(compareBy<NormalizedSlot> { it.begin }.thenBy { it.end })
 
             DailyOperatingDto(
-                dayLabel = KOR_DAY[dow] ?: dow.name,
+                label = KOR_DAY[dow] ?: dow.name,
                 slots = ordered.map {
+                    val end = if (it.end == LocalTime.MIDNIGHT || (it.end.hour == 23 && it.end.minute == 59)) "24:00"
+                    else it.end.format(TIME_FMT)
+
                     OperatingSlotDto(
                         begin = it.begin.format(TIME_FMT),
-                        end = it.end.format(TIME_FMT)
+                        end = end
                     )
                 },
             )
@@ -57,7 +61,7 @@ object OperatingHourPresenter {
     }
 
     private fun emptyDay(dow: DayOfWeek) = DailyOperatingDto(
-        dayLabel = KOR_DAY[dow] ?: dow.name,
+        label = KOR_DAY[dow] ?: dow.name,
         slots = emptyList(),
     )
 

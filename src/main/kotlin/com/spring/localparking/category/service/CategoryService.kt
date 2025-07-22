@@ -1,8 +1,8 @@
 package com.spring.localparking.category.service
 
 import com.spring.localparking.category.repository.CategoryRepository
-import com.spring.localparking.user.dto.CategoryDto
-import com.spring.localparking.user.dto.CategoryResponse
+import com.spring.localparking.category.dto.CategoryDto
+import com.spring.localparking.category.dto.CategoryResponse
 import org.springframework.stereotype.Service
 
 @Service

@@ -48,7 +48,8 @@ class SecurityConfig(
                     "/swagger-resources/**",
                     "/webjars/**",
                     "/store/**",
-                    "/parking/**"
+                    "/parking/**",
+                    "/category/**"
                 ).permitAll()
                     .requestMatchers("/admin/**").hasRole("ADMIN")
                     .anyRequest().authenticated()
