@@ -98,18 +98,18 @@ open class RegisterService (
             }
         }
 
-        val requestIds = request.categoryIds ?: emptyList()
-        if (requestIds.isEmpty()) throw CustomException(ErrorCode.CATEGORY_NOT_FOUND)
-
-        val categories = categoryRepository.findAllById(requestIds)
-        if (categories.size != requestIds.size) {
-            throw CustomException(ErrorCode.CATEGORY_NOT_FOUND)
+        request.categoryIds?.takeIf { it.isNotEmpty() }?.let { requestIds ->
+            val categories = categoryRepository.findAllById(requestIds)
+            if (categories.size != requestIds.size) {
+                throw CustomException(ErrorCode.CATEGORY_NOT_FOUND)
+            }
+            if (categories.any { it.parent != null }) {
+                throw CustomException(ErrorCode.INVALID_CATEGORY)
+            }
+            user.categories.clear()
+            categories.forEach { user.categories.add(UserCategory(user, it)) }
         }
-        if (categories.any { it.parent != null }) {
-            throw CustomException(ErrorCode.INVALID_CATEGORY)
-        }
-        user.categories.clear()
-        categories.forEach { user.categories.add(UserCategory(user, it)) }
         user.isOnboarding = true
+
     }
 }
