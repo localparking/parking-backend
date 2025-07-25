@@ -15,22 +15,28 @@ class TimeSlot(
     @Column(nullable = false)
     val dayOfWeek: DayOfWeek,
 
-    @Column(nullable = false)
-    val beginTime: LocalTime,
+    @Column(nullable = true)
+    val beginTime: LocalTime? = null,
 
-    @Column(nullable = false)
-    val endTime: LocalTime,
+    @Column(nullable = true)
+    val endTime: LocalTime? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "operating_hour_id")
     var operatingHour: OperatingHour? = null
 ) {
-    fun isOvernight(): Boolean = endTime.isBefore(beginTime)
+    fun isValid(): Boolean = beginTime != null && endTime != null && beginTime != endTime
 
-    fun contains(time: LocalTime): Boolean =
-        if (isOvernight()) {
-            !time.isBefore(beginTime) || time.isBefore(endTime)
+    fun isOvernight(): Boolean = isValid() && endTime!!.isBefore(beginTime!!)
+    fun containsOrNull(time: LocalTime): Boolean? {
+        if (!isValid()) return null
+        val start = beginTime!!
+        val end = endTime!!
+        return if (isOvernight()) {
+            !time.isBefore(start) || time.isBefore(end)
         } else {
-            !time.isBefore(beginTime) && time.isBefore(endTime)
+            !time.isBefore(start) && time.isBefore(end)
         }
+    }
 }
+

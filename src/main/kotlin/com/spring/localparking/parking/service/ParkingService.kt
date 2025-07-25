@@ -4,7 +4,7 @@ import com.spring.global.exception.ErrorCode
 import com.spring.localparking.global.dto.PageResponse
 import com.spring.localparking.global.dto.PagingInfo
 import com.spring.localparking.global.exception.CustomException
-import com.spring.localparking.operatingHour.domain.isOpened
+import com.spring.localparking.parking.domain.isOpened
 import com.spring.localparking.parking.dto.AssociatedStoreDto
 import com.spring.localparking.parking.dto.ParkingLotDetailResponse
 import com.spring.localparking.parking.dto.ParkingLotListResponse

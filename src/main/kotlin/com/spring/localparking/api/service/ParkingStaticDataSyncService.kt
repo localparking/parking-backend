@@ -1,12 +1,10 @@
 package com.spring.localparking.api.service
 
 import com.spring.localparking.api.config.SeoulParkingApiClient
-import com.spring.localparking.api.dto.ParkingInfo
 import com.spring.localparking.api.dto.ApiConstants
+import com.spring.localparking.api.dto.ParkingInfo
 import com.spring.localparking.operatingHour.domain.*
-import com.spring.localparking.parking.domain.FeePolicy
-import com.spring.localparking.parking.domain.ParkingLot
-import com.spring.localparking.parking.domain.ParkingLotDocument
+import com.spring.localparking.parking.domain.*
 import com.spring.localparking.parking.repository.ParkingLotRepository
 import com.spring.localparking.parking.repository.ParkingLotSearchRepository
 import jakarta.annotation.PostConstruct
@@ -24,15 +22,14 @@ class ParkingStaticDataSyncService(
     private val parkingLotRepository: ParkingLotRepository,
     private val parkingLotSearchRepository: ParkingLotSearchRepository
 ) {
-
     private val log = LoggerFactory.getLogger(javaClass)
     private val ZONE: ZoneId = ZoneId.of("Asia/Seoul")
 
-//    @PostConstruct
-//    fun init() {
-//        log.info("===== [SYSTEM] 애플리케이션 시작: 주차장 기본 정보 초기화 실행 =====")
-//        syncStaticParkingData()
-//    }
+    @PostConstruct
+    fun init() {
+        log.info("===== [SYSTEM] 애플리케이션 시작: 주차장 기본 정보 초기화 실행 =====")
+        syncStaticParkingData()
+    }
 
     @Scheduled(cron = "0 0 2 * * MON")
     @Transactional
@@ -42,7 +39,6 @@ class ParkingStaticDataSyncService(
         log.info("==================================================")
 
         val batchStart = LocalDateTime.now(ZONE)
-        val todayDow = batchStart.dayOfWeek
 
         val existingMap = parkingLotRepository.findAll().associateBy { it.parkingCode }
         val toPersist = mutableListOf<ParkingLot>()
@@ -62,14 +58,14 @@ class ParkingStaticDataSyncService(
                     val feePolicy = buildFeePolicy(info)
                     val op = buildOperatingHour(info)
                     val hourlyFee = calculateHourlyFee(feePolicy)
+
                     val lot = existingMap[info.parkingCode]?.apply {
                         updateInfo(info, feePolicy, op, hourlyFee)
-                    } ?: ParkingLot.from(info, feePolicy, op,hourlyFee)
+                    } ?: ParkingLot.from(info, feePolicy, op, hourlyFee)
 
                     toPersist += lot
                 }
 
-                // API 호출 rate 제한 완충
                 if (idx < ApiConstants.SEOUL_API_AREAS.size - 1) {
                     try {
                         Thread.sleep(1000)
@@ -80,7 +76,6 @@ class ParkingStaticDataSyncService(
                 }
             }
 
-            // ---------- RDB 저장 ----------
             if (toPersist.isNotEmpty()) {
                 parkingLotRepository.saveAll(toPersist)
                 log.info("DB 저장/업데이트: {}건", toPersist.size)
@@ -88,7 +83,6 @@ class ParkingStaticDataSyncService(
                 log.info("저장할 변경 사항이 없습니다.")
             }
 
-            // ---------- ES 문서 구성 ----------
             val documents = toPersist
                 .asSequence()
                 .filter { it.lat != null && it.lon != null }
@@ -97,14 +91,16 @@ class ParkingStaticDataSyncService(
                     val isOpenNow: Boolean? = op?.isOpened(batchStart)
                     val is24Today: Boolean = op?.is24Hours(batchStart.dayOfWeek) ?: false
 
-                    val docHours = op?.timeSlots?.map {
-                        DocumentOperatingHour(
-                            dayOfWeek = it.dayOfWeek,
-                            beginTime = it.beginTime.hour * 100 + it.beginTime.minute,
-                            endTime = it.endTime.hour * 100 + it.endTime.minute,
-                            isOvernight = it.isOvernight()
-                        )
-                    } ?: emptyList()
+                    val docHours = op?.timeSlots
+                        ?.filter { it.isValid() }
+                        ?.map { slot ->
+                            DocumentOperatingHour(
+                                dayOfWeek = slot.dayOfWeek,
+                                beginTime = slot.beginTime!!.hour * 100 + slot.beginTime!!.minute,
+                                endTime = slot.endTime!!.hour * 100 + slot.endTime!!.minute,
+                                isOvernight = slot.isOvernight()
+                            )
+                        } ?: emptyList()
 
                     ParkingLotDocument(
                         parkingCode = lot.parkingCode,
@@ -151,53 +147,64 @@ class ParkingStaticDataSyncService(
         addWeekendSlots(info, op)
         addHolidaySlot(info, op)
 
+        op.timeSlots.removeIf { !it.isValid() }
+
         return if (op.timeSlots.isEmpty()) null else op
     }
+
 
     private fun addWeekdaySlots(info: ParkingInfo, op: OperatingHour) {
         val b = parseTime(info.weekdayBeginTime)
         val e = parseTime(info.weekdayEndTime)
-        if (b != null && e != null && b != e) {
-            listOf(
-                DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
-                DayOfWeek.THURSDAY, DayOfWeek.FRIDAY
-            ).forEach { op.addTimeSlot(TimeSlot(dayOfWeek = it, beginTime = b, endTime = e)) }
-        }
+        if (isInvalidSlot(b, e)) return
+
+        listOf(
+            DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
+            DayOfWeek.THURSDAY, DayOfWeek.FRIDAY
+        ).forEach { addSlot(op, it, b, e) }
     }
 
     private fun addWeekendSlots(info: ParkingInfo, op: OperatingHour) {
         val b = parseTime(info.weekendBeginTime)
         val e = parseTime(info.weekendEndTime)
-        if (b != null && e != null && b != e) {
-            op.addTimeSlot(TimeSlot(dayOfWeek = DayOfWeek.SATURDAY, beginTime = b, endTime = e))
-            op.addTimeSlot(TimeSlot(dayOfWeek = DayOfWeek.SUNDAY, beginTime = b, endTime = e))
-        }
+        if (isInvalidSlot(b, e)) return
+
+        addSlot(op, DayOfWeek.SATURDAY, b, e)
+        addSlot(op, DayOfWeek.SUNDAY, b, e)
     }
 
     private fun addHolidaySlot(info: ParkingInfo, op: OperatingHour) {
         val b = parseTime(info.holidayBeginTime)
         val e = parseTime(info.holidayEndTime)
-        if (b != null && e != null && b != e) {
-            val dup = op.timeSlots.any {
-                it.dayOfWeek == DayOfWeek.SUNDAY && it.beginTime == b && it.endTime == e
-            }
-            if (!dup) {
-                op.addTimeSlot(TimeSlot(dayOfWeek = DayOfWeek.SUNDAY, beginTime = b, endTime = e))
-            }
+        if (isInvalidSlot(b, e)) return
+
+        // 중복 체크 (예: 일요일과 같은 시간대가 이미 있을 경우 저장 X)
+        val dup = op.timeSlots.any {
+            it.dayOfWeek == DayOfWeek.SUNDAY && it.beginTime == b && it.endTime == e
         }
+        if (!dup) addSlot(op, DayOfWeek.SUNDAY, b, e)
     }
 
     private fun parseTime(raw: String?): LocalTime? {
         if (raw.isNullOrBlank() || raw.length != 4) return null
-        if (raw == "2400") return LocalTime.MAX
-        return try {
-            val h = raw.substring(0, 2).toInt()
-            val m = raw.substring(2, 4).toInt()
-            LocalTime.of(h, m)
-        } catch (_: Exception) {
-            null
+        return when (raw) {
+            "2400" -> LocalTime.of(23, 59)
+            else -> {
+                val h = raw.substring(0, 2).toIntOrNull() ?: return null
+                val m = raw.substring(2, 4).toIntOrNull() ?: return null
+                if (h > 23 || m > 59) return null
+                LocalTime.of(h, m)
+            }
         }
     }
+
+    private fun isInvalidSlot(b: LocalTime?, e: LocalTime?): Boolean = b == null || e == null || b == e
+
+    private fun addSlot(op: OperatingHour, day: DayOfWeek, b: LocalTime?, e: LocalTime?) {
+        if (isInvalidSlot(b, e)) return
+        op.addTimeSlot(TimeSlot(dayOfWeek = day, beginTime = b, endTime = e))
+    }
+
 
     private fun calculateHourlyFee(feePolicy: FeePolicy?): Int? {
         val baseFee = feePolicy?.baseFee

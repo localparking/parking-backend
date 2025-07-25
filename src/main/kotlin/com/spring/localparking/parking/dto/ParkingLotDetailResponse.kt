@@ -1,10 +1,8 @@
 package com.spring.localparking.parking.dto
 
-import com.spring.localparking.operatingHour.domain.is24Hours
-import com.spring.localparking.operatingHour.domain.openStatus
-import com.spring.localparking.operatingHour.dto.GroupedOperatingHoursDto
-import com.spring.localparking.operatingHour.dto.buildGroupedWeek
 import com.spring.localparking.parking.domain.ParkingLot
+import com.spring.localparking.parking.domain.is24Hours
+import com.spring.localparking.parking.domain.openStatus
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter

@@ -34,7 +34,7 @@ enum class ErrorCode(
 
     //CATEGORY
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 카테고리입니다."),
-    INVALID_CATEGORY(HttpStatus.BAD_REQUEST, "유효하지 않은 카테고리입니다."),
+    INVALID_TOP_CATEGORY(HttpStatus.BAD_REQUEST, "상위 카테고리ID로 입력하세요"),
 
     //PARKING
     PARKING_LOT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주차장입니다."),

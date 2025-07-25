@@ -3,7 +3,7 @@ package com.spring.localparking.store.dto
 import com.spring.localparking.operatingHour.DailyOperatingDto
 import com.spring.localparking.operatingHour.OperatingHourPresenter
 import com.spring.localparking.operatingHour.domain.OperatingHour
-import com.spring.localparking.operatingHour.domain.openStatus
+import com.spring.localparking.parking.domain.openStatus
 import com.spring.localparking.store.domain.Store
 import java.time.format.DateTimeFormatter
 
