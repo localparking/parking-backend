@@ -1,8 +1,8 @@
 package com.spring.localparking.store
 
 import com.spring.localparking.operatingHour.domain.DocumentOperatingHour
-import com.spring.localparking.operatingHour.domain.is24Hours
-import com.spring.localparking.operatingHour.domain.isOpened
+import com.spring.localparking.parking.domain.is24Hours
+import com.spring.localparking.parking.domain.isOpened
 import com.spring.localparking.store.domain.Store
 import com.spring.localparking.store.domain.StoreDocument
 import org.springframework.data.elasticsearch.core.geo.GeoPoint
@@ -32,8 +32,8 @@ object StoreDocumentMapper {
             ?.map { slot ->
                 DocumentOperatingHour(
                     dayOfWeek = slot.dayOfWeek,
-                    beginTime = slot.beginTime.hour * 100 + slot.beginTime.minute,
-                    endTime = slot.endTime.hour * 100 + slot.endTime.minute,
+                    beginTime = slot.beginTime!!.hour * 100 + slot.beginTime!!.minute,
+                    endTime = slot.endTime!!.hour * 100 + slot.endTime!!.minute,
                     isOvernight = slot.isOvernight()
                 )
             }.orEmpty()

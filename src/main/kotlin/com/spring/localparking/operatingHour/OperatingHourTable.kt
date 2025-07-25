@@ -1,8 +1,9 @@
 package com.spring.localparking.operatingHour
 
 import com.spring.localparking.operatingHour.domain.OperatingHour
-import com.spring.localparking.operatingHour.domain.normalizedSlots
 import com.spring.localparking.operatingHour.domain.NormalizedSlot
+import com.spring.localparking.operatingHour.domain.isValid
+import com.spring.localparking.parking.domain.normalizedSlots
 import java.time.DayOfWeek
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -34,7 +35,10 @@ object OperatingHourPresenter {
         if (op == null || op.timeSlots.isEmpty()) {
             return DayOfWeek.values().map { emptyDay(it) }
         }
-        val grouped = op.normalizedSlots().groupBy { it.dayOfWeek }
+
+        val grouped = op.normalizedSlots()
+            .filter { it.isValid() }
+            .groupBy { it.dayOfWeek }
 
         return DayOfWeek.values().map { dow ->
             val raw = grouped[dow].orEmpty()
@@ -43,19 +47,23 @@ object OperatingHourPresenter {
             val (normal, overnight) = raw.partition { !it.overnight }
             val merged = mergeNormalSameDay(normal)
             val ordered = (merged + overnight)
-                .sortedWith(compareBy<NormalizedSlot> { it.begin }.thenBy { it.end })
+                .sortedWith(
+                    compareBy<NormalizedSlot> { it.begin ?: LocalTime.MIN }
+                        .thenBy { it.end ?: LocalTime.MIN }
+                )
 
             DailyOperatingDto(
                 label = KOR_DAY[dow] ?: dow.name,
-                slots = ordered.map {
-                    val end = if (it.end == LocalTime.MIDNIGHT || (it.end.hour == 23 && it.end.minute == 59)) "24:00"
-                    else it.end.format(TIME_FMT)
+                slots = ordered.map { slot ->
+                    val beginStr = slot.begin!!.format(TIME_FMT)
+                    val endRaw = slot.end!!
+                    val endStr =
+                        if (endRaw == LocalTime.MIDNIGHT || (endRaw.hour == 23 && endRaw.minute == 59))
+                            "24:00"
+                        else endRaw.format(TIME_FMT)
 
-                    OperatingSlotDto(
-                        begin = it.begin.format(TIME_FMT),
-                        end = end
-                    )
-                },
+                    OperatingSlotDto(begin = beginStr, end = endStr)
+                }
             )
         }
     }
@@ -67,16 +75,18 @@ object OperatingHourPresenter {
 
     private fun mergeNormalSameDay(list: List<NormalizedSlot>): List<NormalizedSlot> {
         if (list.isEmpty()) return list
-        val sorted = list.sortedBy { it.begin }
+
+        val sorted = list.sortedBy { it.begin ?: LocalTime.MIN }
         val merged = mutableListOf<NormalizedSlot>()
+
         var cur = sorted.first()
         for (i in 1 until sorted.size) {
             val nxt = sorted[i]
             if (!cur.overnight && !nxt.overnight &&
                 cur.dayOfWeek == nxt.dayOfWeek &&
-                cur.end >= nxt.begin
+                (cur.end ?: LocalTime.MIN) >= (nxt.begin ?: LocalTime.MAX)
             ) {
-                cur = cur.copy(end = maxOf(cur.end, nxt.end))
+                cur = cur.copy(end = maxOf(cur.end!!, nxt.end!!))
             } else {
                 merged += cur
                 cur = nxt
