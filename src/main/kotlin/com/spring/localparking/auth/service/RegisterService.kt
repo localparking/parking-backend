@@ -16,6 +16,7 @@ import com.spring.localparking.user.exception.UserNotFoundException
 import com.spring.localparking.category.repository.CategoryRepository
 import com.spring.localparking.user.repository.TermAgreementRepository
 import com.spring.localparking.user.repository.TermRepository
+import com.spring.localparking.user.repository.UserCategoryRepository
 import com.spring.localparking.user.repository.UserRepository
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
@@ -26,6 +27,7 @@ open class RegisterService (
     private val termRepository: TermRepository,
     private val userRepository: UserRepository,
     private val categoryRepository: CategoryRepository,
+    private val userCategoryRepository: UserCategoryRepository,
     private val termAgreementRepository: TermAgreementRepository
 ){
     fun getTerms(): TermsResponse {
@@ -96,18 +98,38 @@ open class RegisterService (
             }
         }
 
-        request.categoryIds?.takeIf { it.isNotEmpty() }?.let { requestIds ->
-            val categories = categoryRepository.findAllById(requestIds)
-            if (categories.size != requestIds.size) {
-                throw CustomException(ErrorCode.CATEGORY_NOT_FOUND)
-            }
-            if (categories.any { it.parent != null }) {
-                throw CustomException(ErrorCode.INVALID_CATEGORY)
-            }
-            user.categories.clear()
-            categories.forEach { user.categories.add(UserCategory(user, it)) }
-        }
+        updatedCategories(userId, request.categoryIds?.toSet())
         user.isOnboarding = true
 
     }
+    @Transactional
+    fun updatedCategories(userId: Long, newIds: Set<Long>?) {
+
+        if (newIds == null) return
+
+        if (newIds.isEmpty()) {
+            userCategoryRepository.deleteByUserId(userId)
+            return
+        }
+
+        val categories = categoryRepository.findAllById(newIds)
+
+        if (categories.size != newIds.size) {
+            throw CustomException(ErrorCode.CATEGORY_NOT_FOUND)
+        }
+
+        categories.firstOrNull { it.parent != null }?.let {
+            throw CustomException(ErrorCode.INVALID_TOP_CATEGORY)
+        }
+
+        val userRef = userRepository.getReferenceById(userId)
+
+        userCategoryRepository.deleteByUserId(userId)
+
+        val entities = categories.map { cat ->
+            UserCategory(user = userRef, category = cat)
+        }
+        userCategoryRepository.saveAll(entities)
+    }
+
 }

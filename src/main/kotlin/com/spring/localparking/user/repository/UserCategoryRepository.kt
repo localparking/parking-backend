@@ -6,4 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface UserCategoryRepository : JpaRepository<UserCategory, UserCategoryId> {
     fun findByUserId(userId: Long): List<UserCategory>
+    fun deleteByUserId(userId: Long)
 }
