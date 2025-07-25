@@ -1,5 +1,6 @@
 package com.spring.localparking.store.domain
 
+import com.spring.localparking.global.dto.StoreType
 import com.spring.localparking.operatingHour.domain.OperatingHour
 import jakarta.persistence.*
 
@@ -26,8 +27,8 @@ data class Store(
 
     val tel: String?,
 
-    @Column(name = "is_coalition", nullable = false)
-    val isCoalition: Boolean,
+    @Enumerated(EnumType.STRING)
+    var storeType: StoreType? = StoreType.GENERAL,
 
     @OneToMany(mappedBy = "store", cascade = [CascadeType.ALL], orphanRemoval = true)
     val storeParkingLots: MutableSet<StoreParkingLot> = mutableSetOf(),

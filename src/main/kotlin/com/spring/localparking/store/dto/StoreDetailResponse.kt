@@ -1,5 +1,6 @@
 package com.spring.localparking.store.dto
 
+import com.spring.localparking.global.dto.StoreType
 import com.spring.localparking.operatingHour.DailyOperatingDto
 import com.spring.localparking.operatingHour.OperatingHourPresenter
 import com.spring.localparking.operatingHour.domain.OperatingHour
@@ -11,6 +12,7 @@ import java.time.format.DateTimeFormatter
 data class StoreDetailResponse (
     val storeId: Long,
     val name: String,
+    val storeType: StoreType? = StoreType.GENERAL,
     val categoryNames: List<String>?,
     val address: String?,
     val isOpen: Boolean? = null,
@@ -20,8 +22,7 @@ data class StoreDetailResponse (
     val lon: Double,
     val maxFreeMin: Int? = null,
     val operatingTable: List<DailyOperatingDto>,
-    val associatedParkingLots: List<AssociatedParkingLotDto>,
-    val isCoalition: Boolean = false
+    val associatedParkingLots: List<AssociatedParkingLotDto>
 ){
     companion object {
         private val TIME_FMT = DateTimeFormatter.ofPattern("HH:mm")
@@ -37,6 +38,7 @@ data class StoreDetailResponse (
             return StoreDetailResponse(
                 storeId = entity.id,
                 name = entity.name,
+                storeType = entity.storeType,
                 categoryNames = categoryNames,
                 address = loc.doroAddress?.fullAddress
                     ?: loc.jibeonAddress?.fullAddress,
@@ -46,7 +48,6 @@ data class StoreDetailResponse (
                 lat = loc.lat,
                 lon = loc.lon,
                 maxFreeMin = entity.maxFreeMin,
-                isCoalition = entity.isCoalition,
                 operatingTable = OperatingHourPresenter.build(op),
                 associatedParkingLots = associatedParkingLots
             )

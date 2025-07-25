@@ -21,7 +21,6 @@ class ParkingLot (
     var lat: Double? = null,
     var lon: Double? = null,
     var hourlyFee: Int? = null,
-    var isCoalition: Boolean = false,
 
     @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
     @JoinColumn(name = "fee_policy_id", referencedColumnName = "id")

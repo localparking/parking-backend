@@ -1,5 +1,6 @@
 package com.spring.localparking.store.domain
 
+import com.spring.localparking.global.dto.StoreType
 import com.spring.localparking.operatingHour.domain.DocumentOperatingHour
 import jakarta.persistence.Id
 import org.springframework.data.elasticsearch.annotations.*
@@ -17,8 +18,13 @@ data class StoreDocument (
         ]
     )
     val name: String,
+
+    @Field(type = FieldType.Keyword)
+    val storeType: StoreType,
+
     @Field(type = FieldType.Keyword)
     val categoryIds: List<Long> = emptyList(),
+
     @Field(type = FieldType.Keyword)
     val categoryNames: List<String> = emptyList(),
 
@@ -43,9 +49,6 @@ data class StoreDocument (
 
     @Field(type = FieldType.Keyword)
     val sigungu: String?= null,
-
-    @Field(type = FieldType.Boolean)
-    val isCoalition: Boolean = false,
 
     @Field(type = FieldType.Integer)
     val maxFreeMin: Int? = null,

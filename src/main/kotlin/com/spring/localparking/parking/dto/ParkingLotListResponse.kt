@@ -5,7 +5,6 @@ import com.spring.localparking.parking.domain.ParkingLotDocument
 data class ParkingLotListResponse(
     val parkingCode: String,
     val name: String,
-    val address: String?,
     val capacity: Int?,
     val isRealtime: Boolean?,
     val curCapacity: Int? = null,
@@ -20,7 +19,6 @@ data class ParkingLotListResponse(
             return ParkingLotListResponse(
                 parkingCode = doc.parkingCode,
                 name = doc.name,
-                address = doc.address,
                 capacity = doc.capacity,
                 isRealtime = doc.isRealtime,
                 hourlyFee = doc.hourlyFee,
