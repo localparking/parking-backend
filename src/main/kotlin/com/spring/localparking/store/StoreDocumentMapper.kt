@@ -1,5 +1,6 @@
 package com.spring.localparking.store
 
+import com.spring.localparking.global.dto.StoreType
 import com.spring.localparking.operatingHour.domain.DocumentOperatingHour
 import com.spring.localparking.parking.domain.is24Hours
 import com.spring.localparking.parking.domain.isOpened
@@ -42,6 +43,7 @@ object StoreDocumentMapper {
         return StoreDocument(
             id = store.id,
             name = store.name,
+            storeType = store.storeType ?: StoreType.GENERAL,
             categoryIds = categoryIds,
             categoryNames = categoryNames,
             fullDoroAddress = loc.doroAddress?.fullAddress,
@@ -49,7 +51,6 @@ object StoreDocumentMapper {
             sido = loc.doroAddress?.sido,
             sigungu = loc.doroAddress?.sigungu,
             location = GeoPoint(lat, lon),
-            isCoalition = store.isCoalition,
             maxFreeMin = store.maxFreeMin,
             isOpen = isOpen,
             is24Hours = is24,
