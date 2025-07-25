@@ -20,7 +20,7 @@ data class StoreDocument (
     val name: String,
 
     @Field(type = FieldType.Keyword)
-    val storeType: StoreType,
+    val storeType: StoreType? = StoreType.GENERAL,
 
     @Field(type = FieldType.Keyword)
     val categoryIds: List<Long> = emptyList(),
