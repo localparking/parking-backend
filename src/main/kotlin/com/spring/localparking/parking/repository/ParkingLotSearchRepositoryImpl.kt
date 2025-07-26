@@ -3,6 +3,7 @@ package com.spring.localparking.parking.repository
 import co.elastic.clients.elasticsearch._types.FieldValue
 import co.elastic.clients.elasticsearch._types.SortOrder
 import co.elastic.clients.elasticsearch._types.query_dsl.Query
+import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType
 import co.elastic.clients.json.JsonData
 import com.spring.localparking.global.dto.SortType
 import com.spring.localparking.parking.domain.ParkingLotDocument
@@ -27,6 +28,8 @@ class ParkingLotSearchRepositoryImpl(
 ) : ParkingLotSearchRepositoryCustom {
 
     override fun searchByFilters(request: ParkingLotSearchRequest, pageable: Pageable): Page<ParkingLotDocument> {
+        val lat = request.lat ?: 37.498095
+        val lon = request.lon ?: 127.027610
         val nativeQuery = NativeQuery.builder()
             .withQuery { q ->
                 q.bool { b ->
@@ -43,7 +46,7 @@ class ParkingLotSearchRepositoryImpl(
                         withSort { s ->
                             s.geoDistance { g ->
                                 g.field("location")
-                                    .location { l -> l.latlon { it.lat(request.lat).lon(request.lon) } }
+                                    .location { l -> l.latlon { it.lat(lat).lon(lon) } }
                                     .order(SortOrder.Asc)
                             }
                         }
@@ -62,10 +65,12 @@ class ParkingLotSearchRepositoryImpl(
     }
 
     private fun addBaseFilters(filters: MutableList<Query>, request: ParkingLotSearchRequest) {
+        val lat = request.lat ?: 37.498095
+        val lon = request.lon ?: 127.027610
         filters.add(Query.of { t ->
             t.geoDistance { g ->
                 g.field("location").distance("2km")
-                    .location { l -> l.latlon { ll -> ll.lat(request.lat).lon(request.lon) } }
+                    .location { l -> l.latlon { ll -> ll.lat(lat).lon(lon) } }
             }
         })
         if (request.isFree == true) {
@@ -179,5 +184,36 @@ class ParkingLotSearchRepositoryImpl(
                     }
             }
         }
+    }
+    override fun searchByTextAndLocation(
+        query: String,
+        lat: Double?,
+        lon: Double?,
+        distanceKm: Int,
+        pageable: Pageable
+    ): Page<ParkingLotDocument> {
+
+        val nativeQuery = NativeQuery.builder()
+            .withQuery { q ->
+                q.bool { b ->
+                    b.must { m ->
+                        m.multiMatch { mm ->
+                            mm.query(query)
+                                .fields("name^3", "address^1.5") // name과 address를 정확히 검색하도록 수정
+                                .type(TextQueryType.BestFields)
+                        }
+                    }
+                }
+            }
+            .withPageable(pageable)
+            .apply {
+                withSort { s -> s.score { it.order(SortOrder.Desc) } }
+            }
+            .build()
+
+        val searchHits = elasticsearchOperations.search(nativeQuery, ParkingLotDocument::class.java)
+        val content = searchHits.searchHits.map { it.content }
+        val total = searchHits.totalHits
+        return PageImpl(content, pageable, total)
     }
 }

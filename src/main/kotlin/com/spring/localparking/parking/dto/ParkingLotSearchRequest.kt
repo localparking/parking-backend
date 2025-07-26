@@ -6,12 +6,10 @@ import org.jetbrains.annotations.NotNull
 
 @Schema(description = "지도 기반 주차장 검색 요청 DTO")
 data class ParkingLotSearchRequest(
-    @field:NotNull
     @Schema(description = "위도", example = "37.498095")
-    val lat: Double,
-    @field:NotNull
+    val lat: Double?= null,
     @Schema(description = "경도", example = "127.027610")
-    val lon: Double,
+    val lon: Double?= null,
     @field:NotNull
     @Schema(description = "검색 정렬 (예: DISTANCE, PRICE)", example = "DISTANCE")
     val sort: SortType = SortType.DISTANCE,
