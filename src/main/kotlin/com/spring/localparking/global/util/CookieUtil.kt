@@ -1,36 +1,28 @@
 package com.spring.localparking.global.util
 
-import jakarta.servlet.http.Cookie
 import org.springframework.http.ResponseCookie
 
 object CookieUtil {
 
     private const val REFRESH_TOKEN_EXPIRY = 60 * 60 * 24 * 7L
+    private const val ACCESS_TOKEN_EXPIRY = 60 * 15L // 15분
 
-    fun createAccessTokenCookie(accessToken: String): ResponseCookie =
+    fun createAccessTokenCookie(accessToken: String, maxAge: Long = ACCESS_TOKEN_EXPIRY): ResponseCookie =
         ResponseCookie.from("accessToken", accessToken)
             .httpOnly(true)
             .secure(true)
             .path("/")
-            .maxAge(60 * 15)
+            .maxAge(maxAge)
             .sameSite("None")
             .build()
 
-    fun createRefreshTokenCookie(refreshToken: String) : ResponseCookie =
+    fun createRefreshTokenCookie(refreshToken: String, maxAge: Long = REFRESH_TOKEN_EXPIRY) : ResponseCookie =
         ResponseCookie.from("refreshToken", refreshToken)
             .httpOnly(true)
             .secure(true)
             .path("/")
-            .maxAge(REFRESH_TOKEN_EXPIRY)
+            .maxAge(maxAge)
             .sameSite("None")
             .build()
 
-    fun deleteRefreshTokenCookie() : Cookie =
-        Cookie("refreshToken", null).apply {
-            maxAge = 0
-            isHttpOnly = true
-            secure = true
-            path = "/"
-            domain = "localhost"
-        }
 }

@@ -1,7 +1,8 @@
 package com.spring.localparking.parking.controller
 
-import com.spring.localparking.global.dto.PageResponse
-import com.spring.localparking.global.dto.PageSearchResponse
+import com.spring.localparking.auth.security.CustomPrincipal
+import com.spring.localparking.search.dto.PageResponse
+import com.spring.localparking.search.dto.PageSearchResponse
 import com.spring.localparking.global.response.ResponseDto
 import com.spring.localparking.global.response.SuccessCode
 import com.spring.localparking.parking.service.ParkingLotService
@@ -9,6 +10,7 @@ import com.spring.localparking.parking.dto.*
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 
 @Tag(name = "주차장 컨트롤러", description = "주차장 관련 API입니다.")
@@ -33,9 +35,11 @@ class ParkingLotController(
     }
     @Operation(summary = "텍스트 기반 주차장 검색", description = "검색어로 주차장을 검색하는 API입니다.")
     @PostMapping("/text-search")
-    fun searchByText(@RequestBody request: ParkingLotTextSearchRequest):
+    fun searchByText(@AuthenticationPrincipal principal: CustomPrincipal?,
+                     @RequestBody request: ParkingLotTextSearchRequest):
             ResponseEntity<ResponseDto<PageSearchResponse<ParkingLotListResponse>>> {
-        val results = parkingLotService.searchByText(request)
+        val userId = principal?.id
+        val results = parkingLotService.searchByText(userId, request)
         return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, results))
     }
 }

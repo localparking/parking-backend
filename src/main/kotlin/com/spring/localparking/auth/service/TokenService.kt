@@ -38,4 +38,11 @@ class TokenService (
         token.updateRefreshToken(newRefreshToken)
         tokenRepository.save(token)
     }
+
+    @Transactional
+    fun deleteRefreshToken(userId: Long) {
+        tokenRepository.findByUserId(userId)?.let {
+            tokenRepository.deleteByUserId(userId)
+        }
+    }
 }

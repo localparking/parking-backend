@@ -10,6 +10,7 @@ import com.spring.localparking.auth.service.TokenService
 import com.spring.localparking.auth.service.social.SocialAuthService
 import com.spring.localparking.global.response.ResponseDto
 import com.spring.localparking.global.response.SuccessCode
+import com.spring.localparking.global.util.CookieUtil
 import com.spring.localparking.global.util.JwtUtil
 import com.spring.localparking.user.exception.UserNotFoundException
 import com.spring.localparking.user.repository.UserRepository
@@ -81,5 +82,24 @@ class AuthController(
         return ResponseEntity.ok(
             ResponseDto.from(SuccessCode.USER_LOGGED_IN, res)
         )
+    }
+
+    @PostMapping("/logout")
+    fun logout(
+        @AuthenticationPrincipal principal: CustomPrincipal
+    ): ResponseEntity<ResponseDto<Unit>> {
+        val userId = requireNotNull(principal.id) { throw UnauthorizedException() }
+        tokenService.deleteRefreshToken(userId)
+        val accessTokenCookie = CookieUtil.createAccessTokenCookie(accessToken = "", maxAge = 0)
+        val refreshTokenCookie = CookieUtil.createRefreshTokenCookie(refreshToken = "", maxAge = 0)
+
+        val headers = HttpHeaders().apply {
+            add(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
+            add(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+        }
+
+        return ResponseEntity.ok()
+            .headers(headers)
+            .body(ResponseDto.empty(SuccessCode.OK))
     }
 }
