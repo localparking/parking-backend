@@ -10,7 +10,10 @@ data class ParkingLotDocument(
     @Id
     val parkingCode: String,
 
-    @Field(type = FieldType.Text)
+    @MultiField(
+        mainField = Field(type = FieldType.Text, analyzer = "nori"),
+        otherFields = [InnerField(suffix = "keyword", type = FieldType.Keyword)]
+    )
     val name: String,
 
     @MultiField(

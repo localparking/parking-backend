@@ -7,7 +7,6 @@ import org.springframework.data.elasticsearch.annotations.*
 import org.springframework.data.elasticsearch.core.geo.GeoPoint
 
 @Document(indexName = "store")
-//@Setting(settingPath = "elasticsearch/elasticsearch-settings.json")
 data class StoreDocument (
     @Id
     val id : Long,
@@ -25,7 +24,10 @@ data class StoreDocument (
     @Field(type = FieldType.Keyword)
     val categoryIds: List<Long> = emptyList(),
 
-    @Field(type = FieldType.Keyword)
+    @MultiField(
+        mainField = Field(type = FieldType.Text, analyzer = "nori", searchAnalyzer = "nori"),
+        otherFields = [InnerField(suffix = "keyword", type = FieldType.Keyword)]
+    )
     val categoryNames: List<String> = emptyList(),
 
     @MultiField(

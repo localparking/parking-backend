@@ -2,15 +2,15 @@ package com.spring.localparking.parking.service
 
 import com.spring.global.exception.ErrorCode
 import com.spring.localparking.global.dto.PageResponse
+import com.spring.localparking.global.dto.PageSearchResponse
 import com.spring.localparking.global.dto.PagingInfo
 import com.spring.localparking.global.exception.CustomException
+import com.spring.localparking.parking.domain.ParkingLotDocument
 import com.spring.localparking.parking.domain.isOpened
-import com.spring.localparking.parking.dto.AssociatedStoreDto
-import com.spring.localparking.parking.dto.ParkingLotDetailResponse
-import com.spring.localparking.parking.dto.ParkingLotListResponse
-import com.spring.localparking.parking.dto.ParkingLotSearchRequest
+import com.spring.localparking.parking.dto.*
 import com.spring.localparking.parking.repository.ParkingLotRepository
 import com.spring.localparking.parking.repository.ParkingLotSearchRepository
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service
@@ -24,11 +24,15 @@ class ParkingLotService(
 ) {
     private val PAGE_SIZE = 20
 
-    fun search(request: ParkingLotSearchRequest): PageResponse<ParkingLotListResponse> {
-        val pageable = PageRequest.of(request.page, PAGE_SIZE)
-
+    fun search(req: ParkingLotSearchRequest): PageResponse<ParkingLotListResponse> {
+        val pageable = PageRequest.of(req.page, PAGE_SIZE)
+        val searchRequest = if (req.lat == null || req.lon == null) {
+            req.copy(lat = 37.498095, lon = 127.027610)
+        } else {
+            req
+        }
         // 1. Elasticsearch에서 모든 조건에 맞는 주차장 검색
-        val pageResult = parkingLotSearchRepository.searchByFilters(request, pageable)
+        val pageResult = parkingLotSearchRepository.searchByFilters(searchRequest, pageable)
         val documents = pageResult.content
 
         // 2. Redis에서 실시간 정보 조회
@@ -41,7 +45,6 @@ class ParkingLotService(
             val curCapacity = realtimeInfo?.second
             ParkingLotListResponse.of(doc, curCapacity)
         }
-
         val pagingInfo = PagingInfo(page = pageResult.number, totalPages = pageResult.totalPages)
         return PageResponse(content, pagingInfo)
     }
@@ -86,5 +89,64 @@ class ParkingLotService(
             val availableSpaces = values.getOrNull(1)?.let { String(it).toIntOrNull() }
             code to Pair(status, availableSpaces)
         }
+    }
+    fun searchByText(req: ParkingLotTextSearchRequest): PageSearchResponse<ParkingLotListResponse> {
+        if (req.query.isBlank()) {
+            throw CustomException(ErrorCode.SEARCH_NOT_BLANK)
+        }
+
+        val pageable = PageRequest.of(req.page, PAGE_SIZE)
+        var searchRadiusKm: Int
+        val page: Page<ParkingLotDocument>
+
+        if (req.lat == null || req.lon == null) {
+            searchRadiusKm = 2
+            page = parkingLotSearchRepository.searchByTextAndLocation(
+                query = req.query,
+                lat = 37.498095,
+                lon = 127.027610,
+                distanceKm = searchRadiusKm,
+                pageable = pageable
+            )
+        } else {
+            // 1. 먼저 2km 반경으로 검색
+            searchRadiusKm = 2
+            var initialPage = parkingLotSearchRepository.searchByTextAndLocation(
+                query = req.query,
+                lat = req.lat,
+                lon = req.lon,
+                distanceKm = searchRadiusKm,
+                pageable = pageable
+            )
+
+            // 2. 결과가 없으면 4km 반경으로 재검색
+            if (initialPage.isEmpty) {
+                searchRadiusKm = 4
+                initialPage = parkingLotSearchRepository.searchByTextAndLocation(
+                    query = req.query,
+                    lat = req.lat,
+                    lon = req.lon,
+                    distanceKm = searchRadiusKm,
+                    pageable = pageable
+                )
+            }
+            page = initialPage
+        }
+
+
+        val documents = page.content
+        val parkingCodes = documents.map { it.parkingCode }
+        val realtimeInfoMap = getRealtimeInfo(parkingCodes)
+
+        val content = documents.map { doc ->
+            val realtimeInfo = realtimeInfoMap[doc.parkingCode]
+            ParkingLotListResponse.of(doc, realtimeInfo?.second)
+        }
+
+        return PageSearchResponse(
+            content,
+            PagingInfo(page = page.number, totalPages = page.totalPages),
+            searchRadiusKm
+        )
     }
 }

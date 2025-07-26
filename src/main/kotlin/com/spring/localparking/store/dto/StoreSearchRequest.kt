@@ -7,12 +7,10 @@ import org.jetbrains.annotations.NotNull
 
 @Schema(description = "지도 기반 가게 검색 요청 DTO")
 data class StoreSearchRequest(
-    @field:NotNull
     @Schema(description = "위도", example = "37.498095")
-    val lat: Double,
-    @field:NotNull
+    val lat: Double?= null,
     @Schema(description = "경도", example = "127.027610")
-    val lon: Double,
+    val lon: Double?= null,
     @field:NotNull
     @Schema(description = "카테고리 ID", example = "2")
     val categoryId: Long?= null,

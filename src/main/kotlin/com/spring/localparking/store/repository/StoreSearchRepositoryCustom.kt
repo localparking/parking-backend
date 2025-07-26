@@ -11,4 +11,12 @@ interface StoreSearchRepositoryCustom {
         categoryFilterIds: List<Long>?,
         pageable: Pageable
     ): Page<StoreDocument>
+
+    fun searchByTextAndLocation(
+        query: String,
+        lat: Double?,
+        lon: Double?,
+        distanceKm: Int,
+        pageable: Pageable
+    ): Page<StoreDocument>
 }

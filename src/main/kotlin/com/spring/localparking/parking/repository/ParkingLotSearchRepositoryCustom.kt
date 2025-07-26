@@ -9,4 +9,12 @@ import org.springframework.stereotype.Repository
 @Repository
 interface ParkingLotSearchRepositoryCustom {
     fun searchByFilters(request: ParkingLotSearchRequest, pageable: Pageable): Page<ParkingLotDocument>
+
+    fun searchByTextAndLocation(
+        query: String,
+        lat: Double?,
+        lon: Double?,
+        distanceKm: Int,
+        pageable: Pageable
+    ): Page<ParkingLotDocument>
 }

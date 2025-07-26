@@ -1,6 +1,7 @@
 package com.spring.localparking.parking.controller
 
 import com.spring.localparking.global.dto.PageResponse
+import com.spring.localparking.global.dto.PageSearchResponse
 import com.spring.localparking.global.response.ResponseDto
 import com.spring.localparking.global.response.SuccessCode
 import com.spring.localparking.parking.service.ParkingLotService
@@ -17,7 +18,7 @@ class ParkingLotController(
     private val parkingLotService: ParkingLotService
 ) {
     @Operation(summary = "지도 기반 주차장 검색", description = "지도에서 주차장을 검색하는 API입니다.")
-    @PostMapping("/map/search")
+    @PostMapping("/map-search")
     fun searchParkingLots(@RequestBody request: ParkingLotSearchRequest):
             ResponseEntity<ResponseDto<PageResponse<ParkingLotListResponse>>> {
         val results = parkingLotService.search(request)
@@ -29,5 +30,12 @@ class ParkingLotController(
             ResponseEntity<ResponseDto<ParkingLotDetailResponse>> {
         val detail = parkingLotService.getDetail(parkingCode)
         return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, detail))
+    }
+    @Operation(summary = "텍스트 기반 주차장 검색", description = "검색어로 주차장을 검색하는 API입니다.")
+    @PostMapping("/text-search")
+    fun searchByText(@RequestBody request: ParkingLotTextSearchRequest):
+            ResponseEntity<ResponseDto<PageSearchResponse<ParkingLotListResponse>>> {
+        val results = parkingLotService.searchByText(request)
+        return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, results))
     }
 }

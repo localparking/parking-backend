@@ -1,11 +1,13 @@
 package com.spring.localparking.store.controller
 
 import com.spring.localparking.global.dto.PageResponse
+import com.spring.localparking.global.dto.PageSearchResponse
 import com.spring.localparking.global.response.ResponseDto
 import com.spring.localparking.global.response.SuccessCode
 import com.spring.localparking.store.dto.StoreDetailResponse
 import com.spring.localparking.store.dto.StoreListResponse
 import com.spring.localparking.store.dto.StoreSearchRequest
+import com.spring.localparking.store.dto.StoreTextSearchRequest
 import com.spring.localparking.store.service.StoreService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -19,7 +21,7 @@ class StoreController(
     private val storeService: StoreService
 ) {
     @Operation(summary = "지도 기반 가게 검색", description = "지도에서 가게를 검색하는 API입니다.")
-    @PostMapping("/map/search")
+    @PostMapping("/map-search")
     fun search(@RequestBody request: StoreSearchRequest):
         ResponseEntity<ResponseDto<PageResponse<StoreListResponse>>> {
         val results = storeService.search(request)
@@ -31,5 +33,12 @@ class StoreController(
         ResponseEntity<ResponseDto<StoreDetailResponse>> {
         val detail = storeService.getDetail(storeId)
         return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, detail))
+    }
+    @Operation(summary = "텍스트 기반 가게 검색", description = "검색어로 가게를 검색하는 API입니다.")
+    @PostMapping("/text-search")
+    fun searchByText(@RequestBody request: StoreTextSearchRequest):
+            ResponseEntity<ResponseDto<PageSearchResponse<StoreListResponse>>> {
+        val results = storeService.searchByText(request)
+        return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, results))
     }
 }

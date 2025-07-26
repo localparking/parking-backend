@@ -3,6 +3,7 @@ package com.spring.localparking.store.repository
 import co.elastic.clients.elasticsearch._types.FieldValue
 import co.elastic.clients.elasticsearch._types.SortOrder
 import co.elastic.clients.elasticsearch._types.query_dsl.Query
+import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType
 import co.elastic.clients.json.JsonData
 import com.spring.localparking.global.dto.SortType
 import com.spring.localparking.store.domain.StoreDocument
@@ -14,7 +15,6 @@ import org.springframework.data.elasticsearch.client.elc.NativeQuery
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.stereotype.Repository
 import java.time.DayOfWeek
-import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -28,14 +28,15 @@ class StoreSearchRepositoryImpl(
         categoryFilterIds: List<Long>?,
         pageable: Pageable
     ): Page<StoreDocument> {
-
+        val lat = request.lat ?: 37.498095
+        val lon = request.lon ?: 127.027610
         val nativeQuery = NativeQuery.builder()
             .withQuery { root ->
                 root.bool { bool ->
                     val filters = mutableListOf<Query>()
 
                     // 1. 기본 필터 추가
-                    filters += geoDistanceFilter(request.lat, request.lon)
+                    filters += geoDistanceFilter(lat, lon)
 
                     categoryFilterIds?.takeIf { it.isNotEmpty() }?.let { ids ->
                         filters += termsFilter("categoryIds", ids)
@@ -69,7 +70,7 @@ class StoreSearchRepositoryImpl(
                     withSort { s ->
                         s.geoDistance { g ->
                             g.field("location")
-                                .location { l -> l.latlon { it.lat(request.lat).lon(request.lon) } }
+                                .location { l -> l.latlon { it.lat(lat).lon(lon) } }
                                 .order(SortOrder.Asc)
                         }
                     }
@@ -80,8 +81,6 @@ class StoreSearchRepositoryImpl(
         val hits = operations.search(nativeQuery, StoreDocument::class.java)
         return PageImpl(hits.map { it.content }.toList(), pageable, hits.totalHits)
     }
-
-    // ---------------- helper methods ----------------
 
     private fun geoDistanceFilter(lat: Double, lon: Double) =
         Query.of { q ->
@@ -157,5 +156,52 @@ class StoreSearchRepositoryImpl(
                     }
             }
         }
+    }
+    override fun searchByTextAndLocation(
+        query: String,
+        lat: Double?,
+        lon: Double?,
+        distanceKm: Int,
+        pageable: Pageable
+    ): Page<StoreDocument> {
+        val filterQueries = mutableListOf<Query>()
+        if (lat != null && lon != null) {
+            val geoDistanceQuery = Query.of { f ->
+                f.geoDistance { gd ->
+                    gd.field("location")
+                        .distance("${distanceKm}km")
+                        .location { loc -> loc.latlon { ll -> ll.lat(lat).lon(lon) } }
+                }
+            }
+            filterQueries.add(geoDistanceQuery)
+        }
+
+        val nativeQuery = NativeQuery.builder()
+            .withQuery { q ->
+                q.bool { b ->
+                    b.must { m ->
+                        m.multiMatch { mm ->
+                            mm.query(query)
+                                .fields(
+                                    "name^3",
+                                    "categoryNames^2",
+                                    "fullDoroAddress^1.5",
+                                    "fullJibeonAddress"
+                                )
+                                .type(TextQueryType.BestFields)
+                        }
+                    }
+                }
+            }
+            .withPageable(pageable)
+            .apply {
+                withSort { s -> s.score { it.order(SortOrder.Desc) } }
+            }
+            .build()
+
+        val searchHits = operations.search(nativeQuery, StoreDocument::class.java)
+        val content = searchHits.searchHits.map { it.content }
+        val total = searchHits.totalHits
+        return PageImpl(content, pageable, total)
     }
 }
