@@ -2,12 +2,13 @@ package com.spring.localparking.store.service
 
 import com.spring.global.exception.ErrorCode
 import com.spring.localparking.category.service.CategoryResolveService
-import com.spring.localparking.global.dto.PageResponse
-import com.spring.localparking.global.dto.PageSearchResponse
-import com.spring.localparking.global.dto.PagingInfo
+import com.spring.localparking.search.dto.PageResponse
+import com.spring.localparking.search.dto.PageSearchResponse
+import com.spring.localparking.search.dto.PagingInfo
 import com.spring.localparking.global.exception.CustomException
 import com.spring.localparking.parking.domain.isOpened
 import com.spring.localparking.parking.dto.AssociatedStoreDto
+import com.spring.localparking.search.service.SearchService
 import com.spring.localparking.store.domain.Store
 import com.spring.localparking.store.domain.StoreDocument
 import com.spring.localparking.store.dto.*
@@ -24,7 +25,8 @@ class StoreService(
     private val storeSearchRepository: StoreSearchRepository,
     private val categoryResolveService: CategoryResolveService,
     private val storeRepository: StoreRepository,
-    private val redisTemplate: RedisTemplate<String, String>
+    private val redisTemplate: RedisTemplate<String, String>,
+    private val searchService: SearchService
 ) {
     private val PAGE_SIZE = 20
 
@@ -93,9 +95,12 @@ class StoreService(
         }
     }
 
-    fun searchByText(req: StoreTextSearchRequest): PageSearchResponse<StoreListResponse> {
+    fun searchByText(uid: Long?, req: StoreTextSearchRequest): PageSearchResponse<StoreListResponse> {
         if (req.query.isBlank()) {
             throw CustomException(ErrorCode.SEARCH_NOT_BLANK)
+        }
+        if (req.query.isNotBlank() && uid != null) {
+            searchService.addRecentSearch(uid, req.query)
         }
         val expandedQuery = categoryResolveService.resolveCategoryNameToQuery(req.query)
         val pageable = PageRequest.of(req.page, PAGE_SIZE)

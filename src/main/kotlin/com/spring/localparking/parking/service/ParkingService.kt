@@ -1,15 +1,16 @@
 package com.spring.localparking.parking.service
 
 import com.spring.global.exception.ErrorCode
-import com.spring.localparking.global.dto.PageResponse
-import com.spring.localparking.global.dto.PageSearchResponse
-import com.spring.localparking.global.dto.PagingInfo
+import com.spring.localparking.search.dto.PageResponse
+import com.spring.localparking.search.dto.PageSearchResponse
+import com.spring.localparking.search.dto.PagingInfo
 import com.spring.localparking.global.exception.CustomException
 import com.spring.localparking.parking.domain.ParkingLotDocument
 import com.spring.localparking.parking.domain.isOpened
 import com.spring.localparking.parking.dto.*
 import com.spring.localparking.parking.repository.ParkingLotRepository
 import com.spring.localparking.parking.repository.ParkingLotSearchRepository
+import com.spring.localparking.search.service.SearchService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.redis.core.StringRedisTemplate
@@ -20,7 +21,8 @@ import java.time.LocalDateTime
 class ParkingLotService(
     private val parkingLotRepository: ParkingLotRepository,
     private val parkingLotSearchRepository: ParkingLotSearchRepository,
-    private val redisTemplate: StringRedisTemplate
+    private val redisTemplate: StringRedisTemplate,
+    private val searchService: SearchService
 ) {
     private val PAGE_SIZE = 20
 
@@ -90,11 +92,13 @@ class ParkingLotService(
             code to Pair(status, availableSpaces)
         }
     }
-    fun searchByText(req: ParkingLotTextSearchRequest): PageSearchResponse<ParkingLotListResponse> {
+    fun searchByText(uid: Long?, req: ParkingLotTextSearchRequest): PageSearchResponse<ParkingLotListResponse> {
         if (req.query.isBlank()) {
             throw CustomException(ErrorCode.SEARCH_NOT_BLANK)
         }
-
+        if (req.query.isNotBlank() && uid != null) {
+            searchService.addRecentSearch(uid, req.query)
+        }
         val pageable = PageRequest.of(req.page, PAGE_SIZE)
         var searchRadiusKm: Int
         val page: Page<ParkingLotDocument>

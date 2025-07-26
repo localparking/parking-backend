@@ -1,4 +1,4 @@
-package com.spring.localparking.global.dto
+package com.spring.localparking.search.dto
 
 data class PagingInfo(
     val page: Int,

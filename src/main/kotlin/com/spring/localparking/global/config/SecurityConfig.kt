@@ -49,7 +49,8 @@ class SecurityConfig(
                     "/webjars/**",
                     "/store/**",
                     "/parking/**",
-                    "/category/**"
+                    "/category/**",
+                    "/search/suggestions",
                 ).permitAll()
                     .requestMatchers("/admin/**").hasRole("ADMIN")
                     .anyRequest().authenticated()
