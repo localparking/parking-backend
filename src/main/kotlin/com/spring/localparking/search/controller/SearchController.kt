@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*
 class SearchController(
     private val searchService: SearchService
 ) {
-    @Operation(summary = "검색 제안 조회 (최근 검색어 + 추천 검색어)")
+    @Operation(summary = "검색 제안 조회 (추천 검색어 + 최근 검색어)", description = "로그인한 사용자에 대한 추천 검색어와 최근 검색어를 조회합니다. ")
     @GetMapping("/suggestions")
     fun getSearchSuggestions(
         @AuthenticationPrincipal principal: CustomPrincipal?
@@ -28,7 +28,7 @@ class SearchController(
         return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, suggestions))
     }
 
-    @Operation(summary = "최근 검색어 삭제")
+    @Operation(summary = "최근 검색어 삭제", description = "로그인한 사용자의 최근 검색어를 삭제합니다.")
     @DeleteMapping("/recent/{searchId}")
     fun deleteRecentSearch(
         @AuthenticationPrincipal principal: CustomPrincipal,
@@ -36,6 +36,16 @@ class SearchController(
     ): ResponseEntity<ResponseDto<Unit>> {
         val userId = requireNotNull(principal.id) { throw UnauthorizedException() }
         searchService.deleteRecentSearch(userId, searchId)
+        return ResponseEntity.ok(ResponseDto.empty(SuccessCode.OK))
+    }
+
+    @Operation(summary = "최근 검색어 전체 삭제", description = "로그인한 사용자의 모든 최근 검색어를 삭제합니다.")
+    @DeleteMapping("/recent")
+    fun deleteAllRecentSearches(
+        @AuthenticationPrincipal principal: CustomPrincipal
+    ): ResponseEntity<ResponseDto<Unit>> {
+        val userId = requireNotNull(principal.id) { throw UnauthorizedException() }
+        searchService.deleteAllRecentSearches(userId)
         return ResponseEntity.ok(ResponseDto.empty(SuccessCode.OK))
     }
 }

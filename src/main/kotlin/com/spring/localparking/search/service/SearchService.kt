@@ -65,4 +65,10 @@ class SearchService(
         }
         recentSearchRepository.delete(search)
     }
+
+    @Transactional
+    fun deleteAllRecentSearches(userId: Long) {
+        val user = userRepository.findById(userId).orElseThrow { UserNotFoundException() }
+        recentSearchRepository.deleteByUser(user)
+    }
 }

@@ -15,4 +15,6 @@ interface RecentSearchRepository: JpaRepository<RecentSearch, Long>{
     fun deleteByUserAndQuery(user: User, query: String)
 
     fun deleteByCreatedAtBefore(cutoffDate: LocalDateTime): Long
+
+    fun deleteByUser(user: User): Long
 }
