@@ -50,6 +50,10 @@ class SearchService(
         }
         val newSearch = RecentSearch(user = user, query = query)
         recentSearchRepository.save(newSearch)
+        val searches = recentSearchRepository.findByUserOrderByCreatedAtDesc(user)
+        if (searches.size > 10) {
+            recentSearchRepository.delete(searches.last())
+        }
     }
 
     @Transactional
