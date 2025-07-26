@@ -6,6 +6,7 @@ import com.spring.localparking.global.dto.Provider
 import com.spring.localparking.global.dto.Role
 import com.spring.localparking.global.dto.Weight
 import jakarta.persistence.*
+import java.time.LocalDateTime
 
 @Entity
 @Table(name="user",
@@ -29,6 +30,8 @@ class User protected constructor(
     var ageGroup: Age? = null,
     @Enumerated(EnumType.STRING)
     var weight: Weight? = null,
+    var createdAt: LocalDateTime? =null,
+    var withdrawnAt: LocalDateTime? = null,
 
     @OneToMany(
         mappedBy = "user",
@@ -71,5 +74,9 @@ class User protected constructor(
     }
     fun updateIsNotification(isNotification: Boolean) {
         this.isNotification = isNotification
+    }
+    fun withdraw() {
+        this.role = Role.WITHDRAWN
+        this.withdrawnAt = LocalDateTime.now()
     }
 }

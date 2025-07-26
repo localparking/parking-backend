@@ -77,7 +77,7 @@ open class RegisterService (
             )
             termAgreementRepository.save(termAgreement)
         }
-
+        user.createdAt = LocalDateTime.now()
         user.updateRole()
     }
 
