@@ -25,4 +25,20 @@ class CategoryResolveService(
             listOf(category.id)
         }
     }
+    @Transactional(readOnly = true)
+    fun resolveCategoryNameToQuery(categoryName: String): String {
+        val allCategories = categoryRepository.findAllBy()
+        val category = allCategories.find { it.name == categoryName } ?: return categoryName
+
+        if (category.parent == null) {
+            val children = allCategories.filter { it.parent?.id == category.id }
+            if (children.isNotEmpty()) {
+                val allNames = listOf(category.name) + children.map { it.name }
+                // "음식점 OR 한식 OR 양식" 형태의 쿼리 문자열 생성
+                return allNames.joinToString(" OR ")
+            }
+        }
+
+        return categoryName
+    }
 }
