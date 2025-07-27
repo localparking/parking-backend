@@ -8,18 +8,18 @@ import org.springframework.stereotype.Service
 
 @Service
 class StoreStaticDataSyncService(
-    private val storeRepository: StoreRepository,        // JPA
-    private val storeSearchRepository: StoreSearchRepository  // ES
+    private val storeRepository: StoreRepository,
+    private val storeSearchRepository: StoreSearchRepository
 ) {
     @PostConstruct
-    fun init() = syncStores()          // 앱 시작 시 1회
+    fun init() = syncStores()
 
     fun syncStores() {
-        val entities = storeRepository.findAll()       // ① RDB 모든 가게
+        val entities = storeRepository.findAll()
         val docs = entities
-            .mapNotNull { StoreDocumentMapper.toDocument(it) }  // ② 문서 매핑
+            .mapNotNull { StoreDocumentMapper.toDocument(it) }
         if (docs.isNotEmpty()) {
-            storeSearchRepository.saveAll(docs)           // ③ ES 색인
+            storeSearchRepository.saveAll(docs)
         }
     }
 }

@@ -20,7 +20,6 @@ data class StoreDetailResponse (
     val tel: String? = null,
     val lat: Double,
     val lon: Double,
-    val maxFreeMin: Int? = null,
     val operatingTable: List<DailyOperatingDto>,
     val associatedParkingLots: List<AssociatedParkingLotDto>
 ){
@@ -47,7 +46,6 @@ data class StoreDetailResponse (
                 tel = entity.tel,
                 lat = loc.lat,
                 lon = loc.lon,
-                maxFreeMin = entity.maxFreeMin,
                 operatingTable = OperatingHourPresenter.build(op),
                 associatedParkingLots = associatedParkingLots
             )

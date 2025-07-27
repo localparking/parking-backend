@@ -16,5 +16,6 @@ class StoreParkingLot(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parking_lot_id")
-    val parkingLot: ParkingLot
+    val parkingLot: ParkingLot,
+
 )

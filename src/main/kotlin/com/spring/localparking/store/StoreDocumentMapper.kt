@@ -39,6 +39,10 @@ object StoreDocumentMapper {
                 )
             }.orEmpty()
 
+        val maxFreeMinutes = store.storeParkingLots
+            .mapNotNull { it.parkingLot.feePolicy?.baseTimeMin }
+            .maxOrNull()
+
 
         return StoreDocument(
             id = store.id,
@@ -51,7 +55,7 @@ object StoreDocumentMapper {
             sido = loc.doroAddress?.sido,
             sigungu = loc.doroAddress?.sigungu,
             location = GeoPoint(lat, lon),
-            maxFreeMin = store.maxFreeMin,
+            freeMinutes = maxFreeMinutes,
             isOpen = isOpen,
             is24Hours = is24,
             operatingHours = docHours

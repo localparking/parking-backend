@@ -53,7 +53,7 @@ data class StoreDocument (
     val sigungu: String?= null,
 
     @Field(type = FieldType.Integer)
-    val maxFreeMin: Int? = null,
+    val freeMinutes: Int? = null,
 
     @GeoPointField
     val location: GeoPoint,

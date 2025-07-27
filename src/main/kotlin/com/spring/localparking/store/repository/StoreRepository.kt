@@ -9,7 +9,12 @@ import org.springframework.stereotype.Repository
 interface StoreRepository : JpaRepository<Store, Long> {
     @EntityGraph(attributePaths = ["storeParkingLots", "storeParkingLots.parkingLot", "storeParkingLots.parkingLot.operatingHour", "storeParkingLots.parkingLot.feePolicy"])
     fun findWithParkingLotsById(id: Long): Store?
-    @EntityGraph(attributePaths = ["location", "categories", "categories.category", "operatingHour", "operatingHour.timeSlots"])
+    @EntityGraph(attributePaths = [
+        "location",
+        "categories.category",
+        "operatingHour.timeSlots",
+        "storeParkingLots.parkingLot.feePolicy"
+    ])
     override fun findAll(): List<Store>
 
 }

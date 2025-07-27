@@ -42,7 +42,7 @@ class StoreSearchRepositoryImpl(
                         filters += termsFilter("categoryIds", ids)
                     }
                     request.maxFreeMin?.let { mf ->
-                        filters += rangeGte("maxFreeMin", mf)
+                        filters += rangeGte("freeMinutes", mf)
                     }
                     if (request.is24Hours == true) {
                         filters += termFilter("is24Hours", true)

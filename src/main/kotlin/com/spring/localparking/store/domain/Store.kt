@@ -33,5 +33,4 @@ data class Store(
     @OneToMany(mappedBy = "store", cascade = [CascadeType.ALL], orphanRemoval = true)
     val storeParkingLots: MutableSet<StoreParkingLot> = mutableSetOf(),
 
-    val maxFreeMin: Int? = null
 )
