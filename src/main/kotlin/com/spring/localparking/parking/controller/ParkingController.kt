@@ -33,7 +33,7 @@ class ParkingLotController(
     }
     @Operation(summary = "텍스트 기반 주차장 검색", description = "검색어로 주차장을 검색하는 API입니다.")
     @PostMapping("/text-search")
-    fun searchByText(@RequestBody request: ParkingLotTextSearchRequest):
+    fun searchByText(@RequestBody request: ParkingLotSearchRequest):
             ResponseEntity<ResponseDto<PageSearchResponse<ParkingLotListResponse>>> {
         val results = parkingLotService.searchByText(request)
         return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, results))

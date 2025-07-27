@@ -51,7 +51,6 @@ enum class ErrorCode(
 
     //SEARCH
     SEARCH_NOT_BLANK(HttpStatus.BAD_REQUEST, "검색어를 입력하세요"),
-    SEARCH_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 검색어입니다."),
 
     // PRODUCT
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품입니다."),

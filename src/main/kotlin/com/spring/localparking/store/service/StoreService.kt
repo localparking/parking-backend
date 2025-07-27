@@ -95,46 +95,33 @@ class StoreService(
         }
     }
 
-    fun searchByText(req: StoreTextSearchRequest): PageSearchResponse<StoreListResponse> {
-        if (req.query.isBlank()) {
+    fun searchByText(req: StoreSearchRequest): PageSearchResponse<StoreListResponse> {
+        if (req.query.isNullOrBlank()) {
             throw CustomException(ErrorCode.SEARCH_NOT_BLANK)
         }
-        val expandedQuery = categoryResolveService.resolveCategoryNameToQuery(req.query)
+        val expandedQuery = req.query?.takeIf { it.isNotBlank() }?.let {
+            categoryResolveService.resolveCategoryNameToQuery(it)
+        }
+        val searchRequest = req.copy(query = expandedQuery)
+        val categoryIds = categoryResolveService.resolveIds(req.categoryId)
         val pageable = PageRequest.of(req.page, PAGE_SIZE)
         var searchRadiusKm: Int
         val page: Page<StoreDocument>
 
-        if (req.lat == null || req.lon == null) {
+        if (req.lat != null && req.lon != null) {
+            // 2-1. 먼저 2km 반경으로 검색
             searchRadiusKm = 2
-            page = storeSearchRepository.searchByTextAndLocation(
-                query = expandedQuery,
-                lat = 37.498095,
-                lon = 127.027610,
-                distanceKm = searchRadiusKm,
-                pageable = pageable
-            )
-        } else {
-            // 1. 먼저 2km 반경으로 검색
-            searchRadiusKm = 2
-            var initialPage = storeSearchRepository.searchByTextAndLocation(
-                query = expandedQuery,
-                lat = req.lat,
-                lon = req.lon,
-                distanceKm = searchRadiusKm,
-                pageable = pageable
-            )
-            // 2. 결과가 없으면 4km 반경으로 재검색
+            var initialPage = storeSearchRepository.searchByText(searchRequest.copy(lat = req.lat, lon = req.lon), categoryIds, pageable)
+
+            // 2-2. 결과가 없으면 4km 반경으로 재검색
             if (initialPage.isEmpty) {
                 searchRadiusKm = 4
-                initialPage = storeSearchRepository.searchByTextAndLocation(
-                    query = expandedQuery,
-                    lat = req.lat,
-                    lon = req.lon,
-                    distanceKm = searchRadiusKm,
-                    pageable = pageable
-                )
+                initialPage = storeSearchRepository.searchByText(searchRequest.copy(lat = req.lat, lon = req.lon), categoryIds, pageable)
             }
             page = initialPage
+        } else {
+            searchRadiusKm = 2
+            page = storeSearchRepository.searchByText(searchRequest.copy(lat = 37.498095, lon = 127.027610), categoryIds, pageable)
         }
 
         val content = page.content.map { StoreListResponse.of(it) }

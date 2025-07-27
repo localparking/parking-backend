@@ -2,6 +2,7 @@ package com.spring.localparking.parking.repository
 
 import co.elastic.clients.elasticsearch._types.FieldValue
 import co.elastic.clients.elasticsearch._types.SortOrder
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery
 import co.elastic.clients.elasticsearch._types.query_dsl.Query
 import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType
 import co.elastic.clients.json.JsonData
@@ -27,16 +28,17 @@ class ParkingLotSearchRepositoryImpl(
     private val elasticsearchOperations: ElasticsearchOperations
 ) : ParkingLotSearchRepositoryCustom {
 
+    /**
+     * 지도 기반 필터 검색
+     */
     override fun searchByFilters(request: ParkingLotSearchRequest, pageable: Pageable): Page<ParkingLotDocument> {
         val lat = request.lat ?: 37.498095
         val lon = request.lon ?: 127.027610
+
         val nativeQuery = NativeQuery.builder()
             .withQuery { q ->
                 q.bool { b ->
-                    val allFilters = mutableListOf<Query>()
-                    addBaseFilters(allFilters, request)
-                    addOperatingConditionFilters(allFilters, request) // Unified and corrected logic
-                    b.filter(allFilters)
+                    b.applyFilters(request, lat, lon)
                 }
             }
             .withPageable(pageable)
@@ -64,56 +66,114 @@ class ParkingLotSearchRepositoryImpl(
         return PageImpl(searchHits.map { it.content }.toList(), pageable, searchHits.totalHits)
     }
 
-    private fun addBaseFilters(filters: MutableList<Query>, request: ParkingLotSearchRequest) {
+    /**
+     * 텍스트 기반 필터 검색
+     */
+    override fun searchByText(request: ParkingLotSearchRequest, pageable: Pageable): Page<ParkingLotDocument> {
         val lat = request.lat ?: 37.498095
         val lon = request.lon ?: 127.027610
-        filters.add(Query.of { t ->
-            t.geoDistance { g ->
-                g.field("location").distance("2km")
-                    .location { l -> l.latlon { ll -> ll.lat(lat).lon(lon) } }
+
+        val nativeQuery = NativeQuery.builder()
+            .withQuery { q ->
+                q.bool { b ->
+                    // 1. 텍스트 검색 조건 (must)
+                    request.query?.takeIf { it.isNotBlank() }?.let {
+                        b.must { m ->
+                            m.multiMatch { mm ->
+                                mm.query(it)
+                                    .fields("name^3", "address^1.5")
+                                    .type(TextQueryType.BestFields)
+                            }
+                        }
+                    }
+                    // 2. 나머지 필터 조건 적용 (filter)
+                    b.applyFilters(request, lat, lon)
+                }
             }
-        })
+            .withPageable(pageable)
+            .apply {
+                withSort { s -> s.score { it.order(SortOrder.Desc) } }
+            }
+            .build()
+
+        val searchHits = elasticsearchOperations.search(nativeQuery, ParkingLotDocument::class.java)
+        val content = searchHits.searchHits.map { it.content }
+        return PageImpl(content, pageable, searchHits.totalHits)
+    }
+
+    /**
+     * 공통 필터 적용 확장 함수
+     */
+    private fun BoolQuery.Builder.applyFilters(
+        request: ParkingLotSearchRequest,
+        lat: Double,
+        lon: Double
+    ): BoolQuery.Builder {
+        val allFilters = mutableListOf<Query>()
+
+        // 기본 필터
+        allFilters.add(geoDistanceFilter(lat, lon))
         if (request.isFree == true) {
-            filters.add(Query.of { t -> t.term { it.field("isFree").value(true) } })
+            allFilters.add(termFilter("isFree", true))
         }
         if (request.isRealtime == true) {
-            filters.add(Query.of { t -> t.term { it.field("isRealtime").value(true) } })
+            allFilters.add(termFilter("isRealtime", true))
         }
         request.maxFeePerHour?.let { fee ->
-            filters.add(Query.of { t -> t.range { it.field("hourlyFee").lte(JsonData.of(fee)) } })
+            allFilters.add(rangeLte("hourlyFee", fee))
         }
         request.congestion?.let { congestions ->
             if (congestions.isNotEmpty()) {
-                filters.add(Query.of { t -> t.terms { it.field("congestion").terms { v -> v.value(congestions.map { FieldValue.of(it) }) } } })
+                allFilters.add(termsFilter("congestion", congestions))
             }
         }
+
+        // 운영 시간 관련 필터
+        addOperatingConditionFilters(allFilters, request)
+
+        return this.filter(allFilters)
     }
+
+    private fun geoDistanceFilter(lat: Double, lon: Double) =
+        Query.of { q ->
+            q.geoDistance { g ->
+                g.field("location").distance("2km")
+                    .location { l -> l.latlon { it.lat(lat).lon(lon) } }
+            }
+        }
+
+    private fun termFilter(field: String, value: Boolean) =
+        Query.of { q -> q.term { t -> t.field(field).value(value) } }
+
+    private fun termsFilter(field: String, values: List<String>) =
+        Query.of { q ->
+            q.terms { t ->
+                t.field(field).terms { v ->
+                    v.value(values.map { FieldValue.of(it) })
+                }
+            }
+        }
+
+    private fun rangeLte(field: String, lte: Int) =
+        Query.of { q ->
+            q.range { r -> r.field(field).lte(JsonData.of(lte)) }
+        }
 
     private fun addOperatingConditionFilters(filters: MutableList<Query>, request: ParkingLotSearchRequest) {
         val useSpecificCheckTime = !request.checkDayOfWeek.isNullOrBlank() && !request.checkTime.isNullOrBlank()
         val now = ZonedDateTime.now(ZoneId.of("Asia/Seoul"))
 
-        // **우선순위 1: is24Hours: true 인 경우**
         if (request.is24Hours == true) {
-            val dayToCheck24h = if (useSpecificCheckTime) {
-                DayOfWeek.valueOf(request.checkDayOfWeek!!.uppercase())
-            } else {
-                now.dayOfWeek
-            }
-            // nested 쿼리만으로 operatingHours의 존재 여부와 조건 매칭을 모두 처리
-            val is24hQuery = create24hQuery(dayToCheck24h)
-            filters.add(is24hQuery)
-            return // 24시간 필터가 가장 우선순위가 높으므로 여기서 종료
-        }
-
-        // **우선순위 2: 특정 시간으로 검색하는 경우**
-        if (useSpecificCheckTime) {
-            val dynamicOpenQuery = createDynamicOpenQuery(request.checkDayOfWeek, request.checkTime)
-            filters.add(dynamicOpenQuery)
+            val dayToCheck24h = if (useSpecificCheckTime) DayOfWeek.valueOf(request.checkDayOfWeek!!.uppercase()) else now.dayOfWeek
+            filters.add(create24hQuery(dayToCheck24h))
             return
         }
 
-        // **우선순위 3: 현재 시간 기준으로 영업 여부를 검색하는 경우**
+        if (useSpecificCheckTime) {
+            filters.add(createDynamicOpenQuery(request.checkDayOfWeek, request.checkTime))
+            return
+        }
+
         if (request.isOpen != null) {
             val dayOfWeekStr = now.dayOfWeek.toString()
             val timeStr = now.format(DateTimeFormatter.ofPattern("HHmm"))
@@ -121,9 +181,8 @@ class ParkingLotSearchRepositoryImpl(
 
             if (request.isOpen == true) {
                 filters.add(dynamicOpenQuery)
-            } else { // isOpen == false
-                // 현재 영업 중이 아닌 모든 주차장 (운영시간 정보가 없거나, 현재 닫혀있는 경우)
-                filters.add(Query.of { b -> b.bool { it.mustNot(dynamicOpenQuery) } })
+            } else {
+                filters.add(Query.of { q -> q.bool { b -> b.mustNot(dynamicOpenQuery) } })
             }
         }
     }
@@ -146,7 +205,6 @@ class ParkingLotSearchRepositoryImpl(
     }
 
     private fun create24hQuery(day: DayOfWeek): Query {
-        // 00:00 ~ 24:00 (데이터상 2359 또는 2400) 슬롯을 찾는 쿼리
         return Query.of { q ->
             q.nested { n ->
                 n.path("operatingHours")
@@ -155,10 +213,12 @@ class ParkingLotSearchRepositoryImpl(
                             val subFilters = mutableListOf<Query>()
                             subFilters.add(Query.of { f -> f.term { t -> t.field("operatingHours.dayOfWeek").value(day.name) } })
                             subFilters.add(Query.of { f -> f.term { t -> t.field("operatingHours.beginTime").value(0) } })
-                            subFilters.add(Query.of { f -> f.bool { sb -> sb.should(
-                                Query.of { t -> t.term { it.field("operatingHours.endTime").value(2400) } },
-                                Query.of { t -> t.term { it.field("operatingHours.endTime").value(2359) } }
-                            ).minimumShouldMatch("1") }})
+                            subFilters.add(Query.of { f -> f.bool { sb ->
+                                sb.should(
+                                    Query.of { t -> t.term { it.field("operatingHours.endTime").value(2400) } },
+                                    Query.of { t -> t.term { it.field("operatingHours.endTime").value(2359) } }
+                                ).minimumShouldMatch("1")
+                            }})
                             b.filter(subFilters)
                         }
                     }
@@ -184,36 +244,5 @@ class ParkingLotSearchRepositoryImpl(
                     }
             }
         }
-    }
-    override fun searchByTextAndLocation(
-        query: String,
-        lat: Double?,
-        lon: Double?,
-        distanceKm: Int,
-        pageable: Pageable
-    ): Page<ParkingLotDocument> {
-
-        val nativeQuery = NativeQuery.builder()
-            .withQuery { q ->
-                q.bool { b ->
-                    b.must { m ->
-                        m.multiMatch { mm ->
-                            mm.query(query)
-                                .fields("name^3", "address^1.5") // name과 address를 정확히 검색하도록 수정
-                                .type(TextQueryType.BestFields)
-                        }
-                    }
-                }
-            }
-            .withPageable(pageable)
-            .apply {
-                withSort { s -> s.score { it.order(SortOrder.Desc) } }
-            }
-            .build()
-
-        val searchHits = elasticsearchOperations.search(nativeQuery, ParkingLotDocument::class.java)
-        val content = searchHits.searchHits.map { it.content }
-        val total = searchHits.totalHits
-        return PageImpl(content, pageable, total)
     }
 }

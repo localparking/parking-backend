@@ -33,7 +33,7 @@ class StoreController(
     }
     @Operation(summary = "텍스트 기반 가게 검색", description = "검색어로 가게를 검색하는 API입니다.")
     @PostMapping("/text-search")
-    fun searchByText(@RequestBody request: StoreTextSearchRequest):
+    fun searchByText(@RequestBody request: StoreSearchRequest):
             ResponseEntity<ResponseDto<PageSearchResponse<StoreListResponse>>> {
         val results = storeService.searchByText(request)
         return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, results))

@@ -90,48 +90,27 @@ class ParkingLotService(
             code to Pair(status, availableSpaces)
         }
     }
-    fun searchByText(req: ParkingLotTextSearchRequest): PageSearchResponse<ParkingLotListResponse> {
-        if (req.query.isBlank()) {
+    fun searchByText(req: ParkingLotSearchRequest): PageSearchResponse<ParkingLotListResponse> {
+        if (req.query.isNullOrBlank()) {
             throw CustomException(ErrorCode.SEARCH_NOT_BLANK)
         }
         val pageable = PageRequest.of(req.page, PAGE_SIZE)
         var searchRadiusKm: Int
         val page: Page<ParkingLotDocument>
 
-        if (req.lat == null || req.lon == null) {
+        if (req.lat != null && req.lon != null) {
             searchRadiusKm = 2
-            page = parkingLotSearchRepository.searchByTextAndLocation(
-                query = req.query,
-                lat = 37.498095,
-                lon = 127.027610,
-                distanceKm = searchRadiusKm,
-                pageable = pageable
-            )
-        } else {
-            // 1. 먼저 2km 반경으로 검색
-            searchRadiusKm = 2
-            var initialPage = parkingLotSearchRepository.searchByTextAndLocation(
-                query = req.query,
-                lat = req.lat,
-                lon = req.lon,
-                distanceKm = searchRadiusKm,
-                pageable = pageable
-            )
+            var initialPage = parkingLotSearchRepository.searchByText(req.copy(lat = req.lat, lon = req.lon), pageable)
 
-            // 2. 결과가 없으면 4km 반경으로 재검색
             if (initialPage.isEmpty) {
                 searchRadiusKm = 4
-                initialPage = parkingLotSearchRepository.searchByTextAndLocation(
-                    query = req.query,
-                    lat = req.lat,
-                    lon = req.lon,
-                    distanceKm = searchRadiusKm,
-                    pageable = pageable
-                )
+                initialPage = parkingLotSearchRepository.searchByText(req.copy(lat = req.lat, lon = req.lon), pageable)
             }
             page = initialPage
+        } else {
+            searchRadiusKm = 3
+            page = parkingLotSearchRepository.searchByText(req.copy(lat = 37.498095, lon = 127.027610), pageable)
         }
-
 
         val documents = page.content
         val parkingCodes = documents.map { it.parkingCode }
