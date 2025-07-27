@@ -5,6 +5,7 @@ import com.spring.localparking.global.dto.Age
 import com.spring.localparking.global.dto.Provider
 import com.spring.localparking.global.dto.Role
 import com.spring.localparking.global.dto.Weight
+import com.spring.localparking.store.domain.Store
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -44,7 +45,10 @@ class User protected constructor(
     var categories: MutableList<UserCategory> = mutableListOf(),
 
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var terms: MutableList<TermAgreement> = mutableListOf()
+    var terms: MutableList<TermAgreement> = mutableListOf(),
+
+    @OneToMany(mappedBy = "owner")
+    var ownedStores: MutableList<Store> = mutableListOf()
 ){
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long?= null

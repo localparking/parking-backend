@@ -1,6 +1,6 @@
-package com.spring.localparking.auth.controller
+package com.spring.localparking.admin.controller
 
-import com.spring.localparking.auth.dto.AdminLoginRequest
+import com.spring.localparking.admin.dto.AdminLoginRequest
 import com.spring.localparking.auth.dto.TokenResponse
 import com.spring.localparking.auth.exception.UnauthorizedException
 import com.spring.localparking.auth.security.CustomPrincipal

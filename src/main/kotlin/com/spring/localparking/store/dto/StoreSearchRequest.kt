@@ -11,12 +11,14 @@ data class StoreSearchRequest(
     val lat: Double?= null,
     @Schema(description = "경도", example = "127.027610")
     val lon: Double?= null,
+    @Schema(description = "검색어 (텍스트 검색 시 사용)", example = "강남역 한식")
+    val query: String? = null,
     @field:NotNull
     @Schema(description = "카테고리 ID", example = "2")
     val categoryId: Long?= null,
     @Schema(description = "검색 정렬 (예: DISTANCE)", example = "DISTANCE")
     val sort: SortType = SortType.DISTANCE,
-    @Schema(description = "최대 무료 주차(분)", example = "30")
+    @Schema(description = "최대 무료 주차(분)", example = "10")
     val maxFreeMin: Int? = null,
     @Schema(description = "운영 여부", example = "true")
     val isOpen: Boolean?= null,

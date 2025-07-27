@@ -2,6 +2,8 @@ package com.spring.localparking.parking.repository
 
 import com.spring.localparking.parking.domain.ParkingLotDocument
 import com.spring.localparking.parking.dto.ParkingLotSearchRequest
+import com.spring.localparking.store.domain.StoreDocument
+import com.spring.localparking.store.dto.StoreSearchRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Repository
@@ -10,11 +12,8 @@ import org.springframework.stereotype.Repository
 interface ParkingLotSearchRepositoryCustom {
     fun searchByFilters(request: ParkingLotSearchRequest, pageable: Pageable): Page<ParkingLotDocument>
 
-    fun searchByTextAndLocation(
-        query: String,
-        lat: Double?,
-        lon: Double?,
-        distanceKm: Int,
+    fun searchByText(
+        request: ParkingLotSearchRequest,
         pageable: Pageable
     ): Page<ParkingLotDocument>
 }

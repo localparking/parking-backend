@@ -10,7 +10,7 @@ class OperatingHour(
     val id: Long = 0,
 
     @OneToMany(mappedBy = "operatingHour", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val timeSlots: MutableList<TimeSlot> = mutableListOf()
+    val timeSlots: MutableSet<TimeSlot> = mutableSetOf()
 ) {
     fun addTimeSlot(slot: TimeSlot) {
         slot.operatingHour = this

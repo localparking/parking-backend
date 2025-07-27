@@ -8,10 +8,10 @@ import com.spring.localparking.search.dto.PagingInfo
 import com.spring.localparking.global.exception.CustomException
 import com.spring.localparking.parking.domain.isOpened
 import com.spring.localparking.parking.dto.AssociatedStoreDto
-import com.spring.localparking.search.service.SearchService
 import com.spring.localparking.store.domain.Store
 import com.spring.localparking.store.domain.StoreDocument
 import com.spring.localparking.store.dto.*
+import com.spring.localparking.store.repository.ProductRepository
 import com.spring.localparking.store.repository.StoreRepository
 import com.spring.localparking.store.repository.StoreSearchRepository
 import org.springframework.data.domain.Page
@@ -26,7 +26,7 @@ class StoreService(
     private val categoryResolveService: CategoryResolveService,
     private val storeRepository: StoreRepository,
     private val redisTemplate: RedisTemplate<String, String>,
-    private val searchService: SearchService
+    private val productRepository: ProductRepository
 ) {
     private val PAGE_SIZE = 20
 
@@ -95,49 +95,33 @@ class StoreService(
         }
     }
 
-    fun searchByText(uid: Long?, req: StoreTextSearchRequest): PageSearchResponse<StoreListResponse> {
-        if (req.query.isBlank()) {
+    fun searchByText(req: StoreSearchRequest): PageSearchResponse<StoreListResponse> {
+        if (req.query.isNullOrBlank()) {
             throw CustomException(ErrorCode.SEARCH_NOT_BLANK)
         }
-        if (req.query.isNotBlank() && uid != null) {
-            searchService.addRecentSearch(uid, req.query)
+        val expandedQuery = req.query?.takeIf { it.isNotBlank() }?.let {
+            categoryResolveService.resolveCategoryNameToQuery(it)
         }
-        val expandedQuery = categoryResolveService.resolveCategoryNameToQuery(req.query)
+        val searchRequest = req.copy(query = expandedQuery)
+        val categoryIds = categoryResolveService.resolveIds(req.categoryId)
         val pageable = PageRequest.of(req.page, PAGE_SIZE)
         var searchRadiusKm: Int
         val page: Page<StoreDocument>
 
-        if (req.lat == null || req.lon == null) {
+        if (req.lat != null && req.lon != null) {
+            // 2-1. 먼저 2km 반경으로 검색
             searchRadiusKm = 2
-            page = storeSearchRepository.searchByTextAndLocation(
-                query = expandedQuery,
-                lat = 37.498095,
-                lon = 127.027610,
-                distanceKm = searchRadiusKm,
-                pageable = pageable
-            )
-        } else {
-            // 1. 먼저 2km 반경으로 검색
-            searchRadiusKm = 2
-            var initialPage = storeSearchRepository.searchByTextAndLocation(
-                query = expandedQuery,
-                lat = req.lat,
-                lon = req.lon,
-                distanceKm = searchRadiusKm,
-                pageable = pageable
-            )
-            // 2. 결과가 없으면 4km 반경으로 재검색
+            var initialPage = storeSearchRepository.searchByText(searchRequest.copy(lat = req.lat, lon = req.lon), categoryIds, pageable)
+
+            // 2-2. 결과가 없으면 4km 반경으로 재검색
             if (initialPage.isEmpty) {
                 searchRadiusKm = 4
-                initialPage = storeSearchRepository.searchByTextAndLocation(
-                    query = expandedQuery,
-                    lat = req.lat,
-                    lon = req.lon,
-                    distanceKm = searchRadiusKm,
-                    pageable = pageable
-                )
+                initialPage = storeSearchRepository.searchByText(searchRequest.copy(lat = req.lat, lon = req.lon), categoryIds, pageable)
             }
             page = initialPage
+        } else {
+            searchRadiusKm = 2
+            page = storeSearchRepository.searchByText(searchRequest.copy(lat = 37.498095, lon = 127.027610), categoryIds, pageable)
         }
 
         val content = page.content.map { StoreListResponse.of(it) }
@@ -147,5 +131,12 @@ class StoreService(
             paging = PagingInfo(page = page.number, totalPages = page.totalPages),
             searchRadiusKm = searchRadiusKm
         )
+    }
+    fun getProductsByStore(storeId: Long): List<ProductResponseDto> {
+        if (!storeRepository.existsById(storeId)) {
+            throw CustomException(ErrorCode.STORE_NOT_FOUND)
+        }
+        val products = productRepository.findByStoreId(storeId)
+        return products.map { product -> ProductResponseDto.from(product) }
     }
 }
