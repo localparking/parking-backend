@@ -11,6 +11,8 @@ data class StoreListResponse(
     val lat: Double,
     val lon: Double,
     val isOpen: Boolean? = null,
+    val purchaseAmount: Int?,
+    val discountMin: Int?
 ) {
     companion object {
         fun of(doc: StoreDocument): StoreListResponse {
@@ -22,6 +24,8 @@ data class StoreListResponse(
                 lat = doc.location.lat,
                 lon = doc.location.lon,
                 isOpen = doc.isOpen,
+                purchaseAmount = doc.purchaseAmount,
+                discountMin = doc.discountMin
             )
         }
     }

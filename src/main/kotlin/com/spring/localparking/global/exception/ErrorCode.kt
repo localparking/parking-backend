@@ -46,8 +46,13 @@ enum class ErrorCode(
 
     // STORE
     STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 가게입니다."),
+    STORE_ALREADY_REQUEST(HttpStatus.BAD_REQUEST, "이미 처리된 요청입니다."),
+    NOT_FOUND_STORE_OWNERSHIP_REQUEST(HttpStatus.NOT_FOUND, "존재하지 않는 가게 소유권 신청입니다."),
 
     //SEARCH
     SEARCH_NOT_BLANK(HttpStatus.BAD_REQUEST, "검색어를 입력하세요"),
     SEARCH_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 검색어입니다."),
+
+    // PRODUCT
+    PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품입니다."),
 }

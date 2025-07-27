@@ -11,6 +11,7 @@ import com.spring.localparking.parking.dto.AssociatedStoreDto
 import com.spring.localparking.store.domain.Store
 import com.spring.localparking.store.domain.StoreDocument
 import com.spring.localparking.store.dto.*
+import com.spring.localparking.store.repository.ProductRepository
 import com.spring.localparking.store.repository.StoreRepository
 import com.spring.localparking.store.repository.StoreSearchRepository
 import org.springframework.data.domain.Page
@@ -24,7 +25,8 @@ class StoreService(
     private val storeSearchRepository: StoreSearchRepository,
     private val categoryResolveService: CategoryResolveService,
     private val storeRepository: StoreRepository,
-    private val redisTemplate: RedisTemplate<String, String>
+    private val redisTemplate: RedisTemplate<String, String>,
+    private val productRepository: ProductRepository
 ) {
     private val PAGE_SIZE = 20
 
@@ -142,5 +144,12 @@ class StoreService(
             paging = PagingInfo(page = page.number, totalPages = page.totalPages),
             searchRadiusKm = searchRadiusKm
         )
+    }
+    fun getProductsByStore(storeId: Long): List<ProductResponseDto> {
+        if (!storeRepository.existsById(storeId)) {
+            throw CustomException(ErrorCode.STORE_NOT_FOUND)
+        }
+        val products = productRepository.findByStoreId(storeId)
+        return products.map { product -> ProductResponseDto.from(product) }
     }
 }

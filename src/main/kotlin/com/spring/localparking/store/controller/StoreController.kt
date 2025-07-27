@@ -4,10 +4,7 @@ import com.spring.localparking.search.dto.PageResponse
 import com.spring.localparking.search.dto.PageSearchResponse
 import com.spring.localparking.global.response.ResponseDto
 import com.spring.localparking.global.response.SuccessCode
-import com.spring.localparking.store.dto.StoreDetailResponse
-import com.spring.localparking.store.dto.StoreListResponse
-import com.spring.localparking.store.dto.StoreSearchRequest
-import com.spring.localparking.store.dto.StoreTextSearchRequest
+import com.spring.localparking.store.dto.*
 import com.spring.localparking.store.service.StoreService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -40,5 +37,11 @@ class StoreController(
             ResponseEntity<ResponseDto<PageSearchResponse<StoreListResponse>>> {
         val results = storeService.searchByText(request)
         return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, results))
+    }
+    @Operation(summary = "가게 상품 목록 조회", description = "특정 가게에 등록된 상품 목록을 조회합니다.")
+    @GetMapping("/{storeId}/products")
+    fun getStoreProducts(@PathVariable storeId: Long): ResponseEntity<ResponseDto<List<ProductResponseDto>>> {
+        val products = storeService.getProductsByStore(storeId)
+        return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, products))
     }
 }

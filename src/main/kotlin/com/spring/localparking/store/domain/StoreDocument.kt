@@ -55,6 +55,12 @@ data class StoreDocument (
     @Field(type = FieldType.Integer)
     val freeMinutes: Int? = null,
 
+    @Field(type = FieldType.Integer)
+    val purchaseAmount: Int? = null,
+
+    @Field(type = FieldType.Integer)
+    val discountMin: Int? = null,
+
     @GeoPointField
     val location: GeoPoint,
 

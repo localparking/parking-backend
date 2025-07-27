@@ -6,6 +6,7 @@ import com.spring.localparking.operatingHour.OperatingHourPresenter
 import com.spring.localparking.operatingHour.domain.OperatingHour
 import com.spring.localparking.parking.domain.openStatus
 import com.spring.localparking.store.domain.Store
+import com.spring.localparking.storekeeper.dto.ParkingBenefitDto
 import java.time.format.DateTimeFormatter
 
 
@@ -21,7 +22,8 @@ data class StoreDetailResponse (
     val lat: Double,
     val lon: Double,
     val operatingTable: List<DailyOperatingDto>,
-    val associatedParkingLots: List<AssociatedParkingLotDto>
+    val associatedParkingLots: List<AssociatedParkingLotDto>,
+    val parkingBenefits: List<ParkingBenefitDto>
 ){
     companion object {
         private val TIME_FMT = DateTimeFormatter.ofPattern("HH:mm")
@@ -47,7 +49,8 @@ data class StoreDetailResponse (
                 lat = loc.lat,
                 lon = loc.lon,
                 operatingTable = OperatingHourPresenter.build(op),
-                associatedParkingLots = associatedParkingLots
+                associatedParkingLots = associatedParkingLots,
+                parkingBenefits = entity.parkingBenefits.map { ParkingBenefitDto.from(it)}
             )
         }
     }

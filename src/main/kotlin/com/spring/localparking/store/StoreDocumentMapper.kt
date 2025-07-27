@@ -43,7 +43,7 @@ object StoreDocumentMapper {
             .mapNotNull { it.parkingLot.feePolicy?.baseTimeMin }
             .maxOrNull()
 
-
+        val representativeBenefit = store.parkingBenefits.minByOrNull { it.purchaseAmount }
         return StoreDocument(
             id = store.id,
             name = store.name,
@@ -56,6 +56,8 @@ object StoreDocumentMapper {
             sigungu = loc.doroAddress?.sigungu,
             location = GeoPoint(lat, lon),
             freeMinutes = maxFreeMinutes,
+            purchaseAmount = representativeBenefit?.purchaseAmount,
+            discountMin = representativeBenefit?.discountMin,
             isOpen = isOpen,
             is24Hours = is24,
             operatingHours = docHours
