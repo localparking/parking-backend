@@ -41,13 +41,18 @@ class StoreSearchRepositoryImpl(
             }
             .withPageable(pageable)
             .apply {
-                if (request.sort == SortType.DISTANCE) {
-                    withSort { s ->
-                        s.geoDistance { g ->
-                            g.field("location")
-                                .location { l -> l.latlon { it.lat(lat).lon(lon) } }
-                                .order(SortOrder.Asc)
+                when (request.sort) {
+                    SortType.PRICE -> {
+                        withSort { s ->
+                            s.field { f -> f.field("freeMinutes").order(SortOrder.Asc) }
                         }
+                    }
+                    else -> {
+                        withSort { s ->
+                            s.geoDistance { g ->
+                                g.field("location")
+                                    .location { l -> l.latlon { it.lat(lat).lon(lon) } }
+                                    .order(SortOrder.Asc) }}
                     }
                 }
             }
@@ -87,6 +92,27 @@ class StoreSearchRepositoryImpl(
                 }
             }
             .withPageable(pageable)
+            .apply {
+                when (request.sort) {
+                    SortType.DISTANCE -> {
+                        withSort { s ->
+                            s.geoDistance { g ->
+                                g.field("location")
+                                    .location { l -> l.latlon { it.lat(lat).lon(lon) } }
+                                    .order(SortOrder.Asc)
+                            }
+                        }
+                    }
+                    SortType.PRICE -> {
+                        withSort { s ->
+                            s.field { f -> f.field("hourlyFee").order(SortOrder.Asc) }
+                        }
+                    }
+                    else -> {
+                        withSort { s -> s.score { it.order(SortOrder.Desc) } }
+                    }
+                }
+            }
             .apply {
                 withSort { s -> s.score { it.order(SortOrder.Desc) } }
             }

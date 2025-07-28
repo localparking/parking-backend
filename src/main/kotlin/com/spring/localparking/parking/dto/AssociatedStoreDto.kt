@@ -1,5 +1,6 @@
 package com.spring.localparking.parking.dto
 
+import com.spring.localparking.category.dto.CategoryDto
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(description = "주차장과 연계된 가게 정보 DTO")
@@ -7,8 +8,8 @@ data class AssociatedStoreDto(
     @Schema(description = "가게 ID")
     val storeId: Long?,
 
-    @Schema(description = "가게 세부 카테고리 이름", example = "한식")
-    val categoryNames: List<String>?,
+    @Schema(description = "가게 세부 카테고리 정보")
+    val categories: List<CategoryDto>?,
 
     @Schema(description = "가게 이름", example = "종로 할머니 칼국수")
     val storeName: String?,

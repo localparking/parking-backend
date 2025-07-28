@@ -21,7 +21,7 @@ data class StoreDocument (
     @Field(type = FieldType.Keyword)
     val storeType: StoreType? = StoreType.GENERAL,
 
-    @Field(type = FieldType.Keyword)
+    @Field(type = FieldType.Long)
     val categoryIds: List<Long> = emptyList(),
 
     @MultiField(
@@ -29,6 +29,9 @@ data class StoreDocument (
         otherFields = [InnerField(suffix = "keyword", type = FieldType.Keyword)]
     )
     val categoryNames: List<String> = emptyList(),
+
+    @Field(type = FieldType.Long)
+    val categoryParentIds: List<Long> = emptyList(),
 
     @MultiField(
         mainField = Field(type = FieldType.Text, analyzer = "nori"),

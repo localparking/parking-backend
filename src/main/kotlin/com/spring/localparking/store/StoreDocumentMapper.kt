@@ -24,6 +24,9 @@ object StoreDocumentMapper {
             .filter { it.isNotBlank() }
             .distinct()
 
+        val categoryParentIds = categories.map { it.category.parent?.id ?: -1L }
+
+
         val op = store.operatingHour
         val isOpen = op?.isOpened(now)
         val is24 = op?.is24Hours(now.dayOfWeek) ?: false
@@ -50,6 +53,7 @@ object StoreDocumentMapper {
             storeType = store.storeType ?: StoreType.GENERAL,
             categoryIds = categoryIds,
             categoryNames = categoryNames,
+            categoryParentIds = categoryParentIds,
             fullDoroAddress = loc.doroAddress?.fullAddress,
             fullJibeonAddress = loc.jibeonAddress?.fullAddress,
             sido = loc.doroAddress?.sido,

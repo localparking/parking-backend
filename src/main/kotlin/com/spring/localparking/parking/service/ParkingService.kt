@@ -1,6 +1,7 @@
 package com.spring.localparking.parking.service
 
 import com.spring.global.exception.ErrorCode
+import com.spring.localparking.category.dto.CategoryDto
 import com.spring.localparking.search.dto.PageResponse
 import com.spring.localparking.search.dto.PageSearchResponse
 import com.spring.localparking.search.dto.PagingInfo
@@ -59,13 +60,18 @@ class ParkingLotService(
         val curCapacity = realtimeInfo?.second
 
         val associatedStores = parkingLot.storeParkingLots.map { sp ->
-            val store = sp.store
+            val otherStore = sp.store
             AssociatedStoreDto(
-                storeId = store.id,
-                categoryNames = store.categories
-                    .map { it.category.name },
-                storeName = store.name,
-                isOpen = store.operatingHour?.isOpened(LocalDateTime.now())
+                storeId = otherStore.id,
+                categories = otherStore.categories.map { storeCategory ->
+                    CategoryDto(
+                        categoryId = storeCategory.category.id,
+                        categoryName = storeCategory.category.name,
+                        parentId = storeCategory.category.parent?.id
+                    )
+                },
+                storeName = otherStore.name,
+                isOpen = otherStore.operatingHour?.isOpened(LocalDateTime.now())
             )
         }
 

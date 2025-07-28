@@ -34,7 +34,6 @@ class CategoryResolveService(
             val children = allCategories.filter { it.parent?.id == category.id }
             if (children.isNotEmpty()) {
                 val allNames = listOf(category.name) + children.map { it.name }
-                // "음식점 OR 한식 OR 양식" 형태의 쿼리 문자열 생성
                 return allNames.joinToString(" OR ")
             }
         }

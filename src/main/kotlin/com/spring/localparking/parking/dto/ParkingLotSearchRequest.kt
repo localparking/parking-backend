@@ -12,9 +12,8 @@ data class ParkingLotSearchRequest(
     val lon: Double?= null,
     @Schema(description = "검색어 (텍스트 검색 시 사용)", example = "강남역 주차장")
     val query: String? = null,
-    @field:NotNull
     @Schema(description = "검색 정렬 (예: DISTANCE, PRICE)", example = "DISTANCE")
-    val sort: SortType = SortType.DISTANCE,
+    val sort: SortType?,
     @Schema(description = "무료 여부", example = "false")
     val isFree: Boolean?,
     @Schema(description = "실시간 주차 가능 여부", example = "false")

@@ -44,19 +44,17 @@ class ParkingLotSearchRepositoryImpl(
             .withPageable(pageable)
             .apply {
                 when (request.sort) {
-                    SortType.DISTANCE -> {
-                        withSort { s ->
-                            s.geoDistance { g ->
-                                g.field("location")
-                                    .location { l -> l.latlon { it.lat(lat).lon(lon) } }
-                                    .order(SortOrder.Asc)
-                            }
-                        }
-                    }
                     SortType.PRICE -> {
                         withSort { s ->
                             s.field { f -> f.field("hourlyFee").order(SortOrder.Asc) }
                         }
+                    }
+                    else -> {
+                        withSort { s ->
+                            s.geoDistance { g ->
+                                g.field("location")
+                                    .location { l -> l.latlon { it.lat(lat).lon(lon) } }
+                                    .order(SortOrder.Asc) }}
                     }
                 }
             }
@@ -76,7 +74,6 @@ class ParkingLotSearchRepositoryImpl(
         val nativeQuery = NativeQuery.builder()
             .withQuery { q ->
                 q.bool { b ->
-                    // 1. 텍스트 검색 조건 (must)
                     request.query?.takeIf { it.isNotBlank() }?.let {
                         b.must { m ->
                             m.multiMatch { mm ->
@@ -86,13 +83,30 @@ class ParkingLotSearchRepositoryImpl(
                             }
                         }
                     }
-                    // 2. 나머지 필터 조건 적용 (filter)
                     b.applyFilters(request, lat, lon)
                 }
             }
             .withPageable(pageable)
             .apply {
-                withSort { s -> s.score { it.order(SortOrder.Desc) } }
+                when (request.sort) {
+                    SortType.DISTANCE -> {
+                        withSort { s ->
+                            s.geoDistance { g ->
+                                g.field("location")
+                                    .location { l -> l.latlon { it.lat(lat).lon(lon) } }
+                                    .order(SortOrder.Asc)
+                            }
+                        }
+                    }
+                    SortType.PRICE -> {
+                        withSort { s ->
+                            s.field { f -> f.field("hourlyFee").order(SortOrder.Asc) }
+                        }
+                    }
+                    else -> {
+                        withSort { s -> s.score { it.order(SortOrder.Desc) } }
+                    }
+                }
             }
             .build()
 
