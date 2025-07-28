@@ -1,5 +1,6 @@
 package com.spring.localparking.store.dto
 
+import com.spring.localparking.category.dto.CategoryDto
 import com.spring.localparking.global.dto.StoreType
 import com.spring.localparking.operatingHour.DailyOperatingDto
 import com.spring.localparking.operatingHour.OperatingHourPresenter
@@ -14,7 +15,7 @@ data class StoreDetailResponse (
     val storeId: Long,
     val name: String,
     val storeType: StoreType? = StoreType.GENERAL,
-    val categoryNames: List<String>?,
+    val categories: List<CategoryDto>?,
     val address: String?,
     val isOpen: Boolean? = null,
     val todayClosingTime: String?,
@@ -32,7 +33,13 @@ data class StoreDetailResponse (
             val (open, closingLocalTime) = op?.openStatus() ?: (null to null)
             val closingStr = closingLocalTime?.format(TIME_FMT)
 
-            val categoryNames = entity.categories.mapNotNull { it.category?.name }
+            val categoryInfoList = entity.categories.map { storeCategory ->
+                CategoryDto(
+                    categoryId = storeCategory.category.id,
+                    categoryName = storeCategory.category.name,
+                    parentId = storeCategory.category.parent?.id
+                )
+            }
             val loc = entity.location
 
 
@@ -40,7 +47,7 @@ data class StoreDetailResponse (
                 storeId = entity.id,
                 name = entity.name,
                 storeType = entity.storeType,
-                categoryNames = categoryNames,
+                categories = categoryInfoList,
                 address = loc.doroAddress?.fullAddress
                     ?: loc.jibeonAddress?.fullAddress,
                 isOpen = open,
