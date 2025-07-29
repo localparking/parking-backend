@@ -31,14 +31,18 @@ class ParkingLotSearchRepositoryImpl(
     /**
      * 지도 기반 필터 검색
      */
-    override fun searchByFilters(request: ParkingLotSearchRequest, pageable: Pageable): Page<ParkingLotDocument> {
+    override fun searchByFilters(
+        request: ParkingLotSearchRequest,
+        pageable: Pageable,
+        searchRadiusKm: Int
+    ): Page<ParkingLotDocument> {
         val lat = request.lat ?: 37.498095
         val lon = request.lon ?: 127.027610
 
         val nativeQuery = NativeQuery.builder()
             .withQuery { q ->
                 q.bool { b ->
-                    b.applyFilters(request, lat, lon)
+                    b.applyFilters(request, lat, lon, searchRadiusKm)
                 }
             }
             .withPageable(pageable)
@@ -67,7 +71,10 @@ class ParkingLotSearchRepositoryImpl(
     /**
      * 텍스트 기반 필터 검색
      */
-    override fun searchByText(request: ParkingLotSearchRequest, pageable: Pageable): Page<ParkingLotDocument> {
+    override fun searchByText(
+        request: ParkingLotSearchRequest,
+        pageable: Pageable,
+        searchRadiusKm: Int): Page<ParkingLotDocument> {
         val lat = request.lat ?: 37.498095
         val lon = request.lon ?: 127.027610
 
@@ -83,7 +90,7 @@ class ParkingLotSearchRepositoryImpl(
                             }
                         }
                     }
-                    b.applyFilters(request, lat, lon)
+                    b.applyFilters(request, lat, lon, searchRadiusKm)
                 }
             }
             .withPageable(pageable)
@@ -121,12 +128,13 @@ class ParkingLotSearchRepositoryImpl(
     private fun BoolQuery.Builder.applyFilters(
         request: ParkingLotSearchRequest,
         lat: Double,
-        lon: Double
+        lon: Double,
+        searchRadiusKm: Int
     ): BoolQuery.Builder {
         val allFilters = mutableListOf<Query>()
 
         // 기본 필터
-        allFilters.add(geoDistanceFilter(lat, lon))
+        allFilters.add(geoDistanceFilter(lat, lon, searchRadiusKm))
         if (request.isFree == true) {
             allFilters.add(termFilter("isFree", true))
         }
@@ -148,10 +156,10 @@ class ParkingLotSearchRepositoryImpl(
         return this.filter(allFilters)
     }
 
-    private fun geoDistanceFilter(lat: Double, lon: Double) =
+    private fun geoDistanceFilter(lat: Double, lon: Double, searchRadiusKm: Int) =
         Query.of { q ->
             q.geoDistance { g ->
-                g.field("location").distance("2km")
+                g.field("location").distance("${searchRadiusKm}km")
                     .location { l -> l.latlon { it.lat(lat).lon(lon) } }
             }
         }

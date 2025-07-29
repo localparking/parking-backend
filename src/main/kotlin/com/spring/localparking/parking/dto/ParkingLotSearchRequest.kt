@@ -2,10 +2,11 @@ package com.spring.localparking.parking.dto
 
 import com.spring.localparking.global.dto.SortType
 import io.swagger.v3.oas.annotations.media.Schema
-import org.jetbrains.annotations.NotNull
 
 @Schema(description = "지도 기반 주차장 검색 요청 DTO")
 data class ParkingLotSearchRequest(
+    @Schema(description = "검색 반경 레벨 (1: 2km, 2: 4km)", example = "1", defaultValue = "1")
+    val distanceLevel: Int = 1,
     @Schema(description = "위도", example = "37.498095")
     val lat: Double?= null,
     @Schema(description = "경도", example = "127.027610")

@@ -32,8 +32,9 @@ class ParkingLotService(
         } else {
             req
         }
+        val searchRadiusKm = if (searchRequest.distanceLevel == 2) 4 else 2
         // 1. Elasticsearch에서 모든 조건에 맞는 주차장 검색
-        val pageResult = parkingLotSearchRepository.searchByFilters(searchRequest, pageable)
+        val pageResult = parkingLotSearchRepository.searchByFilters(searchRequest, pageable, searchRadiusKm)
         val documents = pageResult.content
 
         // 2. Redis에서 실시간 정보 조회
@@ -101,21 +102,20 @@ class ParkingLotService(
             throw CustomException(ErrorCode.SEARCH_NOT_BLANK)
         }
         val pageable = PageRequest.of(req.page, PAGE_SIZE)
-        var searchRadiusKm: Int
-        val page: Page<ParkingLotDocument>
-
-        if (req.lat != null && req.lon != null) {
-            searchRadiusKm = 2
-            var initialPage = parkingLotSearchRepository.searchByText(req.copy(lat = req.lat, lon = req.lon), pageable)
-
-            if (initialPage.isEmpty) {
-                searchRadiusKm = 4
-                initialPage = parkingLotSearchRepository.searchByText(req.copy(lat = req.lat, lon = req.lon), pageable)
-            }
-            page = initialPage
+        val searchRequest = if (req.lat == null || req.lon == null) {
+            req.copy(lat = 37.498095, lon = 127.027610)
         } else {
-            searchRadiusKm = 3
-            page = parkingLotSearchRepository.searchByText(req.copy(lat = 37.498095, lon = 127.027610), pageable)
+            req
+        }
+
+        var page: Page<ParkingLotDocument>
+        var searchRadiusKm = 2
+        while (true) {
+            page = parkingLotSearchRepository.searchByText(searchRequest, pageable, searchRadiusKm)
+            if (page.hasContent() || searchRadiusKm >= 10) {
+                break
+            }
+            searchRadiusKm += 2
         }
 
         val documents = page.content

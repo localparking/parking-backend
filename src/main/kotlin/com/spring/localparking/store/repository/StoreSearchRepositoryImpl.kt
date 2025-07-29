@@ -27,7 +27,8 @@ class StoreSearchRepositoryImpl(
     override fun searchByFilters(
         request: StoreSearchRequest,
         categoryFilterIds: List<Long>?,
-        pageable: Pageable
+        pageable: Pageable,
+        searchRadiusKm: Int
     ): Page<StoreDocument> {
 
         val lat = request.lat ?: 37.498095
@@ -36,7 +37,7 @@ class StoreSearchRepositoryImpl(
         val nativeQuery = NativeQuery.builder()
             .withQuery { q ->
                 q.bool { b ->
-                    b.applyFilters(request, categoryFilterIds, lat, lon)
+                    b.applyFilters(request, categoryFilterIds, lat, lon, searchRadiusKm)
                 }
             }
             .withPageable(pageable)
@@ -65,7 +66,8 @@ class StoreSearchRepositoryImpl(
     override fun searchByText(
         request: StoreSearchRequest,
         categoryFilterIds: List<Long>?,
-        pageable: Pageable
+        pageable: Pageable,
+        searchRadiusKm: Int
     ): Page<StoreDocument> {
 
         val lat = request.lat ?: 37.498095
@@ -88,7 +90,7 @@ class StoreSearchRepositoryImpl(
                             }
                         }
                     }
-                    b.applyFilters(request, categoryFilterIds, lat, lon)
+                    b.applyFilters(request, categoryFilterIds, lat, lon, searchRadiusKm)
                 }
             }
             .withPageable(pageable)
@@ -127,10 +129,11 @@ class StoreSearchRepositoryImpl(
         request: StoreSearchRequest,
         categoryFilterIds: List<Long>?,
         lat: Double,
-        lon: Double
+        lon: Double,
+        searchRadiusKm: Int
     ): BoolQuery.Builder {
         val filters = mutableListOf<Query>()
-        filters.add(geoDistanceFilter(lat, lon))
+        filters.add(geoDistanceFilter(lat, lon, searchRadiusKm))
 
         categoryFilterIds?.takeIf { it.isNotEmpty() }?.let { ids ->
             filters.add(termsFilter("categoryIds", ids))
@@ -153,10 +156,10 @@ class StoreSearchRepositoryImpl(
         return this.filter(filters)
     }
 
-    private fun geoDistanceFilter(lat: Double, lon: Double) =
+    private fun geoDistanceFilter(lat: Double, lon: Double, searchRadiusKm: Int) =
         Query.of { q ->
             q.geoDistance { g ->
-                g.field("location").distance("2km")
+                g.field("location").distance("${searchRadiusKm}km")
                     .location { l -> l.latlon { it.lat(lat).lon(lon) } }
             }
         }

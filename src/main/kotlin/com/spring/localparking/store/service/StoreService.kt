@@ -39,7 +39,8 @@ class StoreService(
         } else {
             req
         }
-        val page = storeSearchRepository.searchByFilters(searchRequest, categoryIds, pageable)
+        val searchRadiusKm = if (searchRequest.distanceLevel == 2) 4 else 2
+        val page = storeSearchRepository.searchByFilters(searchRequest, categoryIds, pageable, searchRadiusKm)
         val content = page.content.map { StoreListResponse.of(it) }
         return PageResponse(
             content = content,
@@ -112,23 +113,18 @@ class StoreService(
         val searchRequest = req.copy(query = expandedQuery)
         val categoryIds = categoryResolveService.resolveIds(req.categoryId)
         val pageable = PageRequest.of(req.page, PAGE_SIZE)
-        var searchRadiusKm: Int
-        val page: Page<StoreDocument>
 
-        if (req.lat != null && req.lon != null) {
-            // 2-1. 먼저 2km 반경으로 검색
-            searchRadiusKm = 2
-            var initialPage = storeSearchRepository.searchByText(searchRequest.copy(lat = req.lat, lon = req.lon), categoryIds, pageable)
+        val finalLat = req.lat ?: 37.498095
+        val finalLon = req.lon ?: 127.027610
 
-            // 2-2. 결과가 없으면 4km 반경으로 재검색
-            if (initialPage.isEmpty) {
-                searchRadiusKm = 4
-                initialPage = storeSearchRepository.searchByText(searchRequest.copy(lat = req.lat, lon = req.lon), categoryIds, pageable)
+        var page: Page<StoreDocument>
+        var searchRadiusKm = 2
+        while (true) {
+            page = storeSearchRepository.searchByText(searchRequest.copy(lat = finalLat, lon = finalLon), categoryIds, pageable, searchRadiusKm)
+            if (page.hasContent() || searchRadiusKm >= 10) {
+                break
             }
-            page = initialPage
-        } else {
-            searchRadiusKm = 2
-            page = storeSearchRepository.searchByText(searchRequest.copy(lat = 37.498095, lon = 127.027610), categoryIds, pageable)
+            searchRadiusKm += 2
         }
 
         val content = page.content.map { StoreListResponse.of(it) }

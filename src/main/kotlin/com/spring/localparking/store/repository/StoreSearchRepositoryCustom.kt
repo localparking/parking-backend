@@ -9,12 +9,14 @@ interface StoreSearchRepositoryCustom {
     fun searchByFilters(
         request: StoreSearchRequest,
         categoryFilterIds: List<Long>?,
-        pageable: Pageable
+        pageable: Pageable,
+        searchRadiusKm: Int
     ): Page<StoreDocument>
 
     fun searchByText(
         request: StoreSearchRequest,
         categoryFilterIds: List<Long>?,
-        pageable: Pageable
+        pageable: Pageable,
+        searchRadiusKm: Int
     ): Page<StoreDocument>
 }
