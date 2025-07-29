@@ -25,11 +25,11 @@ class ParkingStaticDataSyncService(
     private val log = LoggerFactory.getLogger(javaClass)
     private val ZONE: ZoneId = ZoneId.of("Asia/Seoul")
 
-//    @PostConstruct
-//    fun init() {
-//        log.info("===== [SYSTEM] 애플리케이션 시작: 주차장 기본 정보 초기화 실행 =====")
-//        syncStaticParkingData()
-//    }
+    @PostConstruct
+    fun init() {
+        log.info("===== [SYSTEM] 애플리케이션 시작: 주차장 기본 정보 초기화 실행 =====")
+        syncStaticParkingData()
+    }
 
     @Scheduled(cron = "0 0 2 * * MON")
     @Transactional
@@ -215,6 +215,7 @@ class ParkingStaticDataSyncService(
 
         val addFee = feePolicy.additionalFee ?: 0
         val addTime = feePolicy.additionalTimeMin ?: 10
+        if (addTime <= 0) return baseFee
         val remaining = 60 - baseTime
         val chunks = (remaining + addTime - 1) / addTime
         return baseFee + chunks * addFee
