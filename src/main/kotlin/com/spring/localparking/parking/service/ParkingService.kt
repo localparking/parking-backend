@@ -23,7 +23,7 @@ class ParkingLotService(
     private val parkingLotSearchRepository: ParkingLotSearchRepository,
     private val redisTemplate: StringRedisTemplate
 ) {
-    private val PAGE_SIZE = 20
+    private val PAGE_SIZE = 30
 
     fun search(req: ParkingLotSearchRequest): PageResponse<ParkingLotListResponse> {
         val pageable = PageRequest.of(req.page, PAGE_SIZE)

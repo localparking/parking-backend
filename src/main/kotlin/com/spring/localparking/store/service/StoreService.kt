@@ -29,7 +29,7 @@ class StoreService(
     private val redisTemplate: RedisTemplate<String, String>,
     private val productRepository: ProductRepository
 ) {
-    private val PAGE_SIZE = 20
+    private val PAGE_SIZE = 30
 
     fun search(req: StoreSearchRequest): PageResponse<StoreListResponse> {
         val categoryIds = categoryResolveService.resolveIds(req.categoryId)
