@@ -29,10 +29,10 @@ class StoreService(
     private val redisTemplate: RedisTemplate<String, String>,
     private val productRepository: ProductRepository
 ) {
-    private val PAGE_SIZE = 20
+    private val PAGE_SIZE = 30
 
     fun search(req: StoreSearchRequest): PageResponse<StoreListResponse> {
-        val categoryIds = categoryResolveService.resolveIds(req.categoryId)
+        val resolvedCategoryIds = categoryResolveService.resolveAll(req.categoryIds)
         val pageable = PageRequest.of(req.page, PAGE_SIZE)
         val searchRequest = if (req.lat == null || req.lon == null) {
             req.copy(lat = 37.498095, lon = 127.027610)
@@ -40,7 +40,7 @@ class StoreService(
             req
         }
         val searchRadiusKm = if (searchRequest.distanceLevel == 2) 4 else 2
-        val page = storeSearchRepository.searchByFilters(searchRequest, categoryIds, pageable, searchRadiusKm)
+        val page = storeSearchRepository.searchByFilters(searchRequest, resolvedCategoryIds, pageable, searchRadiusKm)
         val content = page.content.map { StoreListResponse.of(it) }
         return PageResponse(
             content = content,
@@ -111,7 +111,7 @@ class StoreService(
             categoryResolveService.resolveCategoryNameToQuery(it)
         }
         val searchRequest = req.copy(query = expandedQuery)
-        val categoryIds = categoryResolveService.resolveIds(req.categoryId)
+        val resolvedCategoryIds = categoryResolveService.resolveAll(req.categoryIds)
         val pageable = PageRequest.of(req.page, PAGE_SIZE)
 
         val finalLat = req.lat ?: 37.498095
@@ -120,7 +120,7 @@ class StoreService(
         var page: Page<StoreDocument>
         var searchRadiusKm = 2
         while (true) {
-            page = storeSearchRepository.searchByText(searchRequest.copy(lat = finalLat, lon = finalLon), categoryIds, pageable, searchRadiusKm)
+            page = storeSearchRepository.searchByText(searchRequest.copy(lat = finalLat, lon = finalLon), resolvedCategoryIds, pageable, searchRadiusKm)
             if (page.hasContent() || searchRadiusKm >= 10) {
                 break
             }
