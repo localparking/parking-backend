@@ -14,7 +14,7 @@ data class StoreSearchRequest(
     val lon: Double?= null,
     @Schema(description = "검색어 (텍스트 검색 시 사용)", example = "강남역 중식")
     val query: String? = null,
-    @Schema(description = "카테고리 ID", example = "2")
+    @Schema(description = "카테고리 ID", example = "[2, 3]")
     val categoryIds: List<Long>?= null,
     @Schema(description = "검색 정렬 (예: DISTANCE)", example = "DISTANCE")
     val sort: SortType?,
