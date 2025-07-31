@@ -12,7 +12,18 @@ class CategoryResolveService(
 ) {
 
     @Transactional(readOnly = true)
-    fun resolveIds(categoryId: Long?): List<Long>? {
+    fun resolveAll(categoryIds: List<Long>?): List<Long>? {
+        if (categoryIds.isNullOrEmpty()) {
+            return null
+        }
+        return categoryIds
+            .mapNotNull { resolveId(it) }
+            .flatten()
+            .distinct()
+    }
+
+    @Transactional(readOnly = true)
+    fun resolveId(categoryId: Long?): List<Long>? {
         if (categoryId == null) return null
         val category: Category = categoryRepository.findById(categoryId)
             .orElse(null) ?: return null
