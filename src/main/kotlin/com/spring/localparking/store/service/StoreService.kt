@@ -74,6 +74,7 @@ class StoreService(
             AssociatedParkingLotDto(
                 parkingCode = lot.parkingCode,
                 name = lot.name,
+                isOpen = lot.operatingHour?.isOpened(LocalDateTime.now()),
                 hourlyFee = lot.hourlyFee,
                 capacity = lot.capacity,
                 curCapacity = getRealtimeInfo(listOf(lot.parkingCode))[lot.parkingCode],

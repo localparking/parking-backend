@@ -50,7 +50,7 @@ class SecurityConfig(
                     "/store/**",
                     "/parking/**",
                     "/category/**",
-                    "/search/suggestions",
+                    "/text-search",
                 ).permitAll()
                     .requestMatchers("/admin/**").hasRole("ADMIN")
                     .anyRequest().authenticated()
