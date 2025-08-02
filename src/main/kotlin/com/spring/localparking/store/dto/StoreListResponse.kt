@@ -7,6 +7,7 @@ import com.spring.localparking.store.domain.StoreDocument
 data class StoreListResponse(
     val storeId: Long,
     val name: String,
+    val address: String,
     val storeType: String? = StoreType.GENERAL.name,
     val categories: List<CategoryDto>?,
     val lat: Double,
@@ -28,6 +29,7 @@ data class StoreListResponse(
             return StoreListResponse(
                 storeId = doc.id,
                 name = doc.name,
+                address = doc.fullDoroAddress ?: doc.fullJibeonAddress ?: "",
                 storeType = doc.storeType?.name,
                 categories = categoryInfoList,
                 lat = doc.location.lat,
