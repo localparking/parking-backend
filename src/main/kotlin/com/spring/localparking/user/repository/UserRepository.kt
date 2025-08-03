@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository
 interface UserRepository :JpaRepository<User, Long> {
     fun findByProviderAndProviderId(provider: Provider, providerId: String): User?
     fun findByAdminId(adminId: String): User?
+    fun findByEmail(email: String): User?
 }
