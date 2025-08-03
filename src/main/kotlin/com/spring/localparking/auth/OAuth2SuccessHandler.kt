@@ -19,6 +19,11 @@ class OAuth2SuccessHandler(
     private val tokenService: TokenService
 ) : AuthenticationSuccessHandler {
 
+    private val allowedOrigins = setOf(
+        "http://localhost:3001",
+        "https://townparking.store"
+    )
+
     @Throws(IOException::class)
     override fun onAuthenticationSuccess(
         req: HttpServletRequest,
@@ -26,6 +31,8 @@ class OAuth2SuccessHandler(
         auth: Authentication
     ) {
         val principal = auth.principal as CustomPrincipal
+
+        val redirectUrlBase = determineRedirectUrl(req)
 
         val userId = principal.id!!
         val userRole = principal.role
@@ -39,7 +46,7 @@ class OAuth2SuccessHandler(
         res.addHeader("Set-Cookie", CookieUtil.createRefreshTokenCookie(refreshToken).toString())
 
         val redirectUrl = UriComponentsBuilder
-            .fromUriString("http://localhost:3001/login/success")
+            .fromUriString(redirectUrlBase)
             .queryParam("role", userRole)
             .queryParam("accessToken", accessToken)
             .queryParam("refreshToken", refreshToken)
@@ -47,5 +54,19 @@ class OAuth2SuccessHandler(
             .toUriString()
 
         res.sendRedirect(redirectUrl)
+    }
+    private fun determineRedirectUrl(req: HttpServletRequest): String {
+        val origin = req.getHeader("Origin")
+        if (origin != null && allowedOrigins.contains(origin)) {
+            return "$origin/login/success"
+        }
+        val referer = req.getHeader("Referer")
+        if (referer != null) {
+            val matchedOrigin = allowedOrigins.find { referer.startsWith(it) }
+            if (matchedOrigin != null) {
+                return "$matchedOrigin/login/success"
+            }
+        }
+        return "http://localhost:3001/login/success"
     }
 }
