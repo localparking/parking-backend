@@ -23,6 +23,6 @@ interface StoreRepository : JpaRepository<Store, Long> {
         "parkingBenefits"
     ])
     override fun findAll(): List<Store>
-    fun findByOwnerId(ownerId: Long): List<Store>
+    fun findByOwnerId(ownerId: Long): Store?
 
 }

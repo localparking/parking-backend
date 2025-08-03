@@ -43,7 +43,7 @@ class StorekeeperRegisterService (
         }
         storeRepository.findByBusinessNumber(request.businessNumber)?.let {
             if (it.owner != null) {
-                throw CustomException(ErrorCode.STORE_ALREADY_REQUEST)
+                throw CustomException(ErrorCode.STOREKEEPER_ALREADY_EXIST)
             }
         }
         val encodedPassword = passwordEncoder.encode(request.password)
