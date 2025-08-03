@@ -17,6 +17,8 @@ enum class ErrorCode(
     TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
     MISSING_TOKEN(HttpStatus.UNAUTHORIZED, "토큰이 없습니다."),
+    ALREADY_USED_ID(HttpStatus.BAD_REQUEST, "이미 사용 중인 아이디입니다."),
+    ALREADY_USED_EMAIL(HttpStatus.BAD_REQUEST, "이미 사용 중인 이메일입니다."),
 
     // USER
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."),
@@ -48,10 +50,15 @@ enum class ErrorCode(
     STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 가게입니다."),
     STORE_ALREADY_REQUEST(HttpStatus.BAD_REQUEST, "이미 처리된 요청입니다."),
     NOT_FOUND_STORE_OWNERSHIP_REQUEST(HttpStatus.NOT_FOUND, "존재하지 않는 가게 소유권 신청입니다."),
+    STOREKEEPER_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "이미 소유주가 있는 가게입니다"),
 
     //SEARCH
     SEARCH_NOT_BLANK(HttpStatus.BAD_REQUEST, "검색어를 입력하세요"),
 
     // PRODUCT
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 상품입니다."),
+
+    //STOREKEEPER
+    PROCESSING_REQUEST(HttpStatus.BAD_REQUEST, "현재 심사가 진행 중입니다."),
+    REJECTED_REQUEST(HttpStatus.BAD_REQUEST, "가입 신청이 거절되었습니다."),
 }

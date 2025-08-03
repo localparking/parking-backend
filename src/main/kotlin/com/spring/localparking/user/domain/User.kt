@@ -1,11 +1,8 @@
 package com.spring.localparking.user.domain
 
 import com.spring.localparking.auth.domain.Token
-import com.spring.localparking.global.dto.Age
-import com.spring.localparking.global.dto.Provider
-import com.spring.localparking.global.dto.Role
-import com.spring.localparking.global.dto.Weight
-import com.spring.localparking.store.domain.Store
+import com.spring.localparking.auth.dto.storekeeper.StorekeeperRegisterRequest
+import com.spring.localparking.global.dto.*
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -18,7 +15,7 @@ class User protected constructor(
     var adminId : String?=null,
     var password : String?=null,
     @Enumerated(EnumType.STRING)
-    var provider: Provider,
+    var provider: Provider = Provider.NONE,
     var providerId : String? = null,
     var nickname: String,
     @Column(nullable = false, unique = true)
@@ -31,8 +28,10 @@ class User protected constructor(
     var ageGroup: Age? = null,
     @Enumerated(EnumType.STRING)
     var weight: Weight? = null,
-    var createdAt: LocalDateTime? =null,
+    var createdAt: LocalDateTime = LocalDateTime.now(),
     var withdrawnAt: LocalDateTime? = null,
+    @Enumerated(EnumType.STRING)
+    var registrationStatus: RequestStatus = RequestStatus.PENDING,
 
     @OneToMany(
         mappedBy = "user",
@@ -47,9 +46,7 @@ class User protected constructor(
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
     var terms: MutableList<TermAgreement> = mutableListOf(),
 
-    @OneToMany(mappedBy = "owner")
-    var ownedStores: MutableList<Store> = mutableListOf()
-){
+    ){
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long?= null
         protected set
@@ -66,6 +63,18 @@ class User protected constructor(
             nickname   = nickname,
             email      = email ?: "unknown@placeholder"
         )
+
+        fun ofStorekeeper(request: StorekeeperRegisterRequest, encodedPassword: String): User {
+            return User(
+                adminId = request.adminId,
+                password = encodedPassword,
+                provider = Provider.NONE,
+                nickname = request.adminId,
+                email = request.email,
+                role = Role.STOREKEEPER,
+                registrationStatus = RequestStatus.PENDING
+            )
+        }
     }
     protected constructor() : this(
         provider   = Provider.NONE,

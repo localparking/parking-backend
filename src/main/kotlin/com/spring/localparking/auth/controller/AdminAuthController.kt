@@ -1,10 +1,12 @@
-package com.spring.localparking.admin.controller
+package com.spring.localparking.auth.controller
 
-import com.spring.localparking.admin.dto.AdminLoginRequest
+import com.spring.localparking.auth.dto.AdminLoginRequest
 import com.spring.localparking.auth.dto.TokenResponse
+import com.spring.localparking.auth.exception.AccessDeniedException
 import com.spring.localparking.auth.exception.UnauthorizedException
 import com.spring.localparking.auth.security.CustomPrincipal
 import com.spring.localparking.auth.service.TokenService
+import com.spring.localparking.global.dto.Role
 import com.spring.localparking.global.util.CookieUtil
 import com.spring.localparking.global.util.JwtUtil
 import io.swagger.v3.oas.annotations.Operation
@@ -18,7 +20,7 @@ import org.springframework.web.bind.annotation.*
 
 @Tag(name = "관리자 인증 컨트롤러", description = "관리자 인증 관련 API입니다.")
 @RestController
-@RequestMapping("admin/auth")
+@RequestMapping("admin/")
 class AdminAuthController(
     private val tokenService: TokenService,
     private val authenticationManager: AuthenticationManager,
@@ -31,6 +33,9 @@ class AdminAuthController(
             UsernamePasswordAuthenticationToken(req.adminId, req.password)
         )
         val principal = auth.principal as CustomPrincipal
+        if (principal.role != Role.ADMIN.value) {
+            throw AccessDeniedException()
+        }
         val userId = principal.id ?: throw UnauthorizedException()
         val accessToken = jwtUtil.generateAccessToken(userId, principal.role)
         val refreshToken = jwtUtil.generateRefreshToken(userId)

@@ -1,4 +1,4 @@
-package com.spring.localparking.admin.dto
+package com.spring.localparking.auth.dto
 
 import io.swagger.v3.oas.annotations.media.Schema
 import org.jetbrains.annotations.NotNull

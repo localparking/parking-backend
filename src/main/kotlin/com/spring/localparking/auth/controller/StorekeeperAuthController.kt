@@ -1,0 +1,48 @@
+package com.spring.localparking.auth.controller
+
+import com.spring.localparking.auth.dto.AdminLoginRequest
+import com.spring.localparking.auth.dto.TokenResponse
+import com.spring.localparking.auth.dto.storekeeper.StorekeeperRegisterRequest
+import com.spring.localparking.auth.service.StorekeeperRegisterService
+import com.spring.localparking.global.response.ResponseDto
+import com.spring.localparking.global.response.SuccessCode
+import com.spring.localparking.global.util.CookieUtil
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+
+@Tag(name = "점주 컨트롤러", description = "점주(가게주인)의 회원가입 및 로그인 관련 API입니다.")
+@RestController
+@RequestMapping("/storekeeper")
+class StorekeeperAuthController(
+    private val storekeeperService: StorekeeperRegisterService
+) {
+
+    @Operation(summary = "점주 회원가입", description = "가게 정보를 함께 받아 회원가입을 신청합니다.")
+    @PostMapping("/register")
+    fun registerStorekeeper(
+        @Valid @RequestBody request: StorekeeperRegisterRequest
+    ): ResponseEntity<ResponseDto<Unit>> {
+        storekeeperService.registerStorekeeper(request)
+        return ResponseEntity.ok(
+            ResponseDto.empty(SuccessCode.USER_CREATED))
+    }
+
+    @Operation(summary = "점주 로그인", description = "점주가 아이디와 비밀번호로 로그인하며, 심사 상태에 따라 결과가 달라집니다.")
+    @PostMapping("/login")
+    fun login(
+        @Valid @RequestBody req: AdminLoginRequest
+    ): ResponseEntity<ResponseDto<TokenResponse>> {
+        val tokenResponse = storekeeperService.loginStorekeeper(req)
+        val responseDto = ResponseDto.from(SuccessCode.USER_LOGGED_IN, tokenResponse)
+        return ResponseEntity.ok()
+            .header("Authorization", "Bearer ${tokenResponse.accessToken}")
+            .header("Set-Cookie", CookieUtil.createRefreshTokenCookie(tokenResponse.refreshToken!!).toString())
+            .body(responseDto)
+    }
+}
