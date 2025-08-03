@@ -11,7 +11,7 @@ import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 
 @Service
-class AdminService(
+class AdminStoreService(
     private val userRepository: UserRepository,
     private val storeRepository: StoreRepository
 ) {

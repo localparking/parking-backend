@@ -1,6 +1,6 @@
 package com.spring.localparking.auth.controller
 
-import com.spring.localparking.admin.dto.AdminLoginRequest
+import com.spring.localparking.auth.dto.AdminLoginRequest
 import com.spring.localparking.auth.dto.TokenResponse
 import com.spring.localparking.auth.dto.storekeeper.StorekeeperRegisterRequest
 import com.spring.localparking.auth.service.StorekeeperRegisterService

@@ -1,7 +1,7 @@
 package com.spring.localparking.auth.service
 
 import com.spring.global.exception.ErrorCode
-import com.spring.localparking.admin.dto.AdminLoginRequest
+import com.spring.localparking.auth.dto.AdminLoginRequest
 import com.spring.localparking.auth.dto.TokenResponse
 import com.spring.localparking.auth.dto.join.RegisterRequest
 import com.spring.localparking.auth.dto.storekeeper.StorekeeperRegisterRequest

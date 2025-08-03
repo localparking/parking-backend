@@ -1,6 +1,6 @@
-package com.spring.localparking.admin.controller
+package com.spring.localparking.auth.controller
 
-import com.spring.localparking.admin.dto.AdminLoginRequest
+import com.spring.localparking.auth.dto.AdminLoginRequest
 import com.spring.localparking.auth.dto.TokenResponse
 import com.spring.localparking.auth.exception.AccessDeniedException
 import com.spring.localparking.auth.exception.UnauthorizedException
@@ -34,7 +34,7 @@ class AdminAuthController(
         )
         val principal = auth.principal as CustomPrincipal
         if (principal.role != Role.ADMIN.value) {
-            throw AccessDeniedException() 
+            throw AccessDeniedException()
         }
         val userId = principal.id ?: throw UnauthorizedException()
         val accessToken = jwtUtil.generateAccessToken(userId, principal.role)
