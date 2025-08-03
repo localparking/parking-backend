@@ -51,6 +51,7 @@ class SecurityConfig(
                     "/parking/**",
                     "/category/**",
                     "/text-search",
+                    "/storekeeper/**",
                 ).permitAll()
                     .requestMatchers("/admin/**").hasRole("ADMIN")
                     .anyRequest().authenticated()

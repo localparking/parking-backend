@@ -6,15 +6,12 @@ import com.spring.localparking.auth.dto.join.RegisterRequest
 import com.spring.localparking.auth.dto.join.TermDto
 import com.spring.localparking.auth.dto.join.TermsResponse
 import com.spring.localparking.global.dto.Age
-import com.spring.localparking.global.dto.Provider
 import com.spring.localparking.global.dto.Role
 import com.spring.localparking.global.dto.Weight
 import com.spring.localparking.global.exception.CustomException
-import com.spring.localparking.user.domain.TermAgreement
 import com.spring.localparking.user.domain.UserCategory
 import com.spring.localparking.user.exception.UserNotFoundException
 import com.spring.localparking.category.repository.CategoryRepository
-import com.spring.localparking.user.repository.TermAgreementRepository
 import com.spring.localparking.user.repository.TermRepository
 import com.spring.localparking.user.repository.UserCategoryRepository
 import com.spring.localparking.user.repository.UserRepository
@@ -28,7 +25,7 @@ open class RegisterService (
     private val userRepository: UserRepository,
     private val categoryRepository: CategoryRepository,
     private val userCategoryRepository: UserCategoryRepository,
-    private val termAgreementRepository: TermAgreementRepository
+    private val termService: TermService
 ){
     fun getTerms(): TermsResponse {
         val terms = termRepository.findAll()
@@ -46,38 +43,10 @@ open class RegisterService (
     @Transactional
     fun registerAgreements(userId: Long, request: RegisterRequest) {
         val user = userRepository.findById(userId).orElseThrow { UserNotFoundException() }
-        if(user.provider == Provider.NONE) throw CustomException(ErrorCode.UNAUTHORIZED)
         if (user.role == Role.USER) {
             throw CustomException(ErrorCode.ALREADY_REGISTERED)
         }
-        val allTerms = termRepository.findAll()
-        val agreementMap = request.agreements.associateBy { it.termId }
-        val missingTerms = allTerms.filterNot { agreementMap.containsKey(it.id) }
-        if (missingTerms.isNotEmpty()) {
-            throw CustomException(ErrorCode.MISSING_REQUIRED_TERMS)
-        }
-        allTerms.forEach { term ->
-            val agreement = agreementMap[term.id]
-                ?: throw CustomException(ErrorCode.TERM_NOT_FOUND)
-
-            if (term.mandatory && !agreement.agreed) {
-                throw CustomException(ErrorCode.REQUIRED_TERM_NOT_AGREED)
-            }
-
-            if (term.termType == "MARKETING_OPT_IN") {
-                user.updateIsNotification(agreement.agreed)
-            }
-
-            val termAgreement = TermAgreement(
-                agreed = agreement.agreed,
-                agreedAt = if (agreement.agreed) LocalDateTime.now() else null,
-                withdrawnAt = if (!agreement.agreed) LocalDateTime.now() else null,
-                user = user,
-                term = term
-            )
-            termAgreementRepository.save(termAgreement)
-        }
-        user.createdAt = LocalDateTime.now()
+        termService.processAgreements(user, request)
         user.updateRole()
     }
 
@@ -104,32 +73,23 @@ open class RegisterService (
     }
     @Transactional
     fun updatedCategories(userId: Long, newIds: Set<Long>?) {
-
         if (newIds == null) return
-
         if (newIds.isEmpty()) {
             userCategoryRepository.deleteByUserId(userId)
             return
         }
-
         val categories = categoryRepository.findAllById(newIds)
-
         if (categories.size != newIds.size) {
             throw CustomException(ErrorCode.CATEGORY_NOT_FOUND)
         }
-
         categories.firstOrNull { it.parent != null }?.let {
             throw CustomException(ErrorCode.INVALID_TOP_CATEGORY)
         }
-
         val userRef = userRepository.getReferenceById(userId)
-
         userCategoryRepository.deleteByUserId(userId)
-
         val entities = categories.map { cat ->
             UserCategory(user = userRef, category = cat)
         }
         userCategoryRepository.saveAll(entities)
     }
-
 }

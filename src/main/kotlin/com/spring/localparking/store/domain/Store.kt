@@ -1,5 +1,6 @@
 package com.spring.localparking.store.domain
 
+import com.spring.localparking.auth.dto.storekeeper.StorekeeperRegisterRequest
 import com.spring.localparking.global.dto.StoreType
 import com.spring.localparking.operatingHour.domain.OperatingHour
 import com.spring.localparking.storekeeper.domain.StoreParkingBenefit
@@ -12,6 +13,9 @@ data class Store(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
+
+    @Column(unique = true)
+    var businessNumber: String? = null,
 
     @OneToMany(mappedBy = "store", cascade = [CascadeType.ALL], orphanRemoval = true)
     var categories: MutableSet<StoreCategory> = mutableSetOf(),
@@ -27,7 +31,7 @@ data class Store(
     @JoinColumn(name = "operating_hour_id")
     var operatingHour: OperatingHour? = null,
 
-    val tel: String?,
+    val tel: String?=null,
 
     @Enumerated(EnumType.STRING)
     var storeType: StoreType? = StoreType.GENERAL,
@@ -38,11 +42,42 @@ data class Store(
     @OneToMany(mappedBy = "store", cascade = [CascadeType.ALL], orphanRemoval = true)
     val parkingBenefits: MutableSet<StoreParkingBenefit> = mutableSetOf(),
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", unique = true)
     var owner: User? = null,
 
     @OneToMany(mappedBy = "store", cascade = [CascadeType.ALL], orphanRemoval = true)
     val products: MutableList<Product> = mutableListOf()
 
-    )
+    ){
+    companion object {
+        fun of(request: StorekeeperRegisterRequest, owner: User): Store {
+            val fullAddress = with(request.storeAddress) {
+                "$sido $sigungu $doroName $buildingNo"
+            }.trim()
+
+            val doroAddress = DoroAddress(
+                sido = request.storeAddress.sido,
+                sigungu = request.storeAddress.sigungu,
+                doroName = request.storeAddress.doroName,
+                buildingNo = request.storeAddress.buildingNo,
+                fullAddress = fullAddress
+            )
+
+            val location = Location(
+                doroAddress = doroAddress,
+                jibeonAddress = null,
+                lat = request.storeAddress.lat,
+                lon = request.storeAddress.lon,
+                id = 0L
+            )
+
+            return Store(
+                name = request.storeName,
+                businessNumber = request.businessNumber,
+                location = location,
+                owner = owner
+            )
+        }
+    }
+}
