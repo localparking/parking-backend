@@ -29,8 +29,7 @@ class SecurityConfig(
     private val jwtAuthFilter: JwtAuthFilter,
     private val kakaoOauth2UserService: KakaoOauth2UserService,
     private val oAuth2SuccessHandler: OAuth2SuccessHandler,
-    private val objectMapper: ObjectMapper,
-    private val cookieAuthorizationRequestRepository: CookieAuthorizationRequestRepository
+    private val objectMapper: ObjectMapper
 ) {
 
     @Bean
@@ -59,10 +58,7 @@ class SecurityConfig(
                     .anyRequest().authenticated()
             }
             .oauth2Login {
-                it.authorizationEndpoint { auth ->
-                    auth.authorizationRequestRepository(cookieAuthorizationRequestRepository)
-                }
-                    .userInfoEndpoint { u -> u.userService(kakaoOauth2UserService) }
+                it.userInfoEndpoint { u -> u.userService(kakaoOauth2UserService) }
                     .successHandler(oAuth2SuccessHandler)
             }
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
