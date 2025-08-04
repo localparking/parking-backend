@@ -3,6 +3,7 @@ package com.spring.localparking.global.config
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.spring.global.exception.ErrorCode
 import com.spring.localparking.auth.OAuth2SuccessHandler
+import com.spring.localparking.auth.component.CookieAuthorizationRequestRepository
 import com.spring.localparking.auth.security.JwtAuthFilter
 import com.spring.localparking.auth.service.social.CustomUserDetailsService
 import com.spring.localparking.auth.service.social.KakaoOauth2UserService
@@ -28,7 +29,8 @@ class SecurityConfig(
     private val jwtAuthFilter: JwtAuthFilter,
     private val kakaoOauth2UserService: KakaoOauth2UserService,
     private val oAuth2SuccessHandler: OAuth2SuccessHandler,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val cookieAuthorizationRequestRepository: CookieAuthorizationRequestRepository
 ) {
 
     @Bean
@@ -57,7 +59,10 @@ class SecurityConfig(
                     .anyRequest().authenticated()
             }
             .oauth2Login {
-                it.userInfoEndpoint { u -> u.userService(kakaoOauth2UserService) }
+                it.authorizationEndpoint { auth ->
+                    auth.authorizationRequestRepository(cookieAuthorizationRequestRepository)
+                }
+                    .userInfoEndpoint { u -> u.userService(kakaoOauth2UserService) }
                     .successHandler(oAuth2SuccessHandler)
             }
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
