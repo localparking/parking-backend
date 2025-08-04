@@ -48,15 +48,24 @@ class OAuth2SuccessHandler(
         res.addHeader("Set-Cookie", CookieUtil.createAccessTokenCookie(accessToken).toString())
         res.addHeader("Set-Cookie", CookieUtil.createRefreshTokenCookie(refreshToken).toString())
 
-        val uriBuilder = UriComponentsBuilder.fromUriString(targetUrl)
+//        val uriBuilder = UriComponentsBuilder.fromUriString(targetUrl)
+//            .queryParam("role", userRole)
+//
+//        if (targetUrl.contains("localhost")) {
+//            uriBuilder.queryParam("accessToken", accessToken)
+//            uriBuilder.queryParam("refreshToken", refreshToken)
+//        }
+
+//        val redirectUrl = uriBuilder.build().toUriString()
+//        res.sendRedirect(redirectUrl)
+        val redirectUrl = UriComponentsBuilder
+            .fromUriString(targetUrl)
             .queryParam("role", userRole)
+            .queryParam("accessToken", accessToken)
+            .queryParam("refreshToken", refreshToken)
+            .build()
+            .toUriString()
 
-        if (targetUrl.contains("localhost")) {
-            uriBuilder.queryParam("accessToken", accessToken)
-            uriBuilder.queryParam("refreshToken", refreshToken)
-        }
-
-        val redirectUrl = uriBuilder.build().toUriString()
         res.sendRedirect(redirectUrl)
     }
     private fun getCookie(request: HttpServletRequest, name: String) =
