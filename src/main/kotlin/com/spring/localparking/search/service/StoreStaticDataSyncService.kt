@@ -1,8 +1,8 @@
-package com.spring.localparking.store.service
+package com.spring.localparking.search.service
 
-import com.spring.localparking.store.StoreDocumentMapper
+import com.spring.localparking.search.dto.StoreDocumentMapper
 import com.spring.localparking.store.repository.StoreRepository
-import com.spring.localparking.store.repository.StoreSearchRepository
+import com.spring.localparking.search.repository.store.StoreSearchRepository
 import jakarta.annotation.PostConstruct
 import org.springframework.stereotype.Service
 

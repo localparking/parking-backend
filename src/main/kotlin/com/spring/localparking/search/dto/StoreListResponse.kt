@@ -1,8 +1,8 @@
-package com.spring.localparking.store.dto
+package com.spring.localparking.search.dto
 
 import com.spring.localparking.category.dto.CategoryDto
 import com.spring.localparking.global.dto.StoreType
-import com.spring.localparking.store.domain.StoreDocument
+import com.spring.localparking.search.domain.StoreDocument
 
 data class StoreListResponse(
     val storeId: Long,

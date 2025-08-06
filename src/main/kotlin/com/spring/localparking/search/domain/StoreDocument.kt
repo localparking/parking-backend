@@ -1,4 +1,4 @@
-package com.spring.localparking.store.domain
+package com.spring.localparking.search.domain
 
 import com.spring.localparking.global.dto.StoreType
 import com.spring.localparking.operatingHour.domain.DocumentOperatingHour

@@ -6,8 +6,8 @@ import com.spring.localparking.api.dto.ParkingInfo
 import com.spring.localparking.operatingHour.domain.*
 import com.spring.localparking.parking.domain.*
 import com.spring.localparking.parking.repository.ParkingLotRepository
-import com.spring.localparking.parking.repository.ParkingLotSearchRepository
-import jakarta.annotation.PostConstruct
+import com.spring.localparking.search.domain.ParkingLotDocument
+import com.spring.localparking.search.repository.parking.ParkingLotSearchRepository
 import org.slf4j.LoggerFactory
 import org.springframework.data.elasticsearch.core.geo.GeoPoint
 import org.springframework.scheduling.annotation.Scheduled

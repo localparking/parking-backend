@@ -1,4 +1,4 @@
-package com.spring.localparking.parking.domain
+package com.spring.localparking.search.domain
 
 import com.spring.localparking.operatingHour.domain.DocumentOperatingHour
 import org.springframework.data.annotation.Id

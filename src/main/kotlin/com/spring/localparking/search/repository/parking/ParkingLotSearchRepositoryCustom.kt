@@ -1,7 +1,7 @@
-package com.spring.localparking.parking.repository
+package com.spring.localparking.search.repository.parking
 
-import com.spring.localparking.parking.domain.ParkingLotDocument
-import com.spring.localparking.parking.dto.ParkingLotSearchRequest
+import com.spring.localparking.search.domain.ParkingLotDocument
+import com.spring.localparking.search.dto.ParkingLotSearchRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Repository

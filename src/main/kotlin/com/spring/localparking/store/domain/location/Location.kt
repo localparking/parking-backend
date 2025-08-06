@@ -1,4 +1,4 @@
-package com.spring.localparking.store.domain
+package com.spring.localparking.store.domain.location
 
 import jakarta.persistence.*
 

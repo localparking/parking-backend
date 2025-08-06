@@ -1,6 +1,6 @@
-package com.spring.localparking.parking.dto
+package com.spring.localparking.search.dto
 
-import com.spring.localparking.parking.domain.ParkingLotDocument
+import com.spring.localparking.search.domain.ParkingLotDocument
 
 data class ParkingLotListResponse(
     val parkingCode: String,

@@ -1,7 +1,7 @@
-package com.spring.localparking.store.repository
+package com.spring.localparking.search.repository.store
 
-import com.spring.localparking.store.domain.StoreDocument
-import com.spring.localparking.store.dto.StoreSearchRequest
+import com.spring.localparking.search.domain.StoreDocument
+import com.spring.localparking.search.dto.StoreSearchRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 

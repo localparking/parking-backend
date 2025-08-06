@@ -1,4 +1,4 @@
-package com.spring.localparking.store.dto
+package com.spring.localparking.search.dto
 
 import com.spring.localparking.global.dto.SortType
 import io.swagger.v3.oas.annotations.media.Schema

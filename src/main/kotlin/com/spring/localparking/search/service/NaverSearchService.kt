@@ -1,7 +1,7 @@
 package com.spring.localparking.search.service
 
-import com.spring.localparking.search.dto.NaverApiResponse
-import com.spring.localparking.search.dto.SearchItemResponse
+import com.spring.localparking.search.dto.naver.NaverApiResponse
+import com.spring.localparking.search.dto.naver.SearchItemResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient

@@ -1,4 +1,4 @@
-package com.spring.localparking.store.repository
+package com.spring.localparking.search.repository.store
 
 import co.elastic.clients.elasticsearch._types.FieldValue
 import co.elastic.clients.elasticsearch._types.SortOrder
@@ -7,8 +7,8 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query
 import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType
 import co.elastic.clients.json.JsonData
 import com.spring.localparking.global.dto.SortType
-import com.spring.localparking.store.domain.StoreDocument
-import com.spring.localparking.store.dto.StoreSearchRequest
+import com.spring.localparking.search.domain.StoreDocument
+import com.spring.localparking.search.dto.StoreSearchRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable

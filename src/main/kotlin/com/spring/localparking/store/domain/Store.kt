@@ -3,6 +3,8 @@ package com.spring.localparking.store.domain
 import com.spring.localparking.auth.dto.storekeeper.StorekeeperRegisterRequest
 import com.spring.localparking.global.dto.StoreType
 import com.spring.localparking.operatingHour.domain.OperatingHour
+import com.spring.localparking.store.domain.location.DoroAddress
+import com.spring.localparking.store.domain.location.Location
 import com.spring.localparking.storekeeper.domain.StoreParkingBenefit
 import com.spring.localparking.user.domain.User
 import jakarta.persistence.*

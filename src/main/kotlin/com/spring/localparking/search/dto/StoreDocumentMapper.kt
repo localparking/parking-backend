@@ -1,11 +1,11 @@
-package com.spring.localparking.store
+package com.spring.localparking.search.dto
 
 import com.spring.localparking.global.dto.StoreType
 import com.spring.localparking.operatingHour.domain.DocumentOperatingHour
 import com.spring.localparking.parking.domain.is24Hours
 import com.spring.localparking.parking.domain.isOpened
 import com.spring.localparking.store.domain.Store
-import com.spring.localparking.store.domain.StoreDocument
+import com.spring.localparking.search.domain.StoreDocument
 import org.springframework.data.elasticsearch.core.geo.GeoPoint
 import java.time.LocalDateTime
 

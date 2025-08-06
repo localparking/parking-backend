@@ -1,4 +1,4 @@
-package com.spring.localparking.search.dto
+package com.spring.localparking.search.dto.page
 
 data class PageResponse<T>(
     val content: List<T>,
