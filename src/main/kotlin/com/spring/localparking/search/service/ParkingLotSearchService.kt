@@ -10,6 +10,7 @@ import com.spring.localparking.search.domain.ParkingLotDocument
 import com.spring.localparking.parking.service.ParkingLotService
 import com.spring.localparking.search.dto.ParkingLotListResponse
 import com.spring.localparking.search.dto.ParkingLotSearchRequest
+import com.spring.localparking.search.dto.ParkingSimpleResponse
 import com.spring.localparking.search.repository.parking.ParkingLotSearchRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -83,5 +84,18 @@ class ParkingLotSearchService(
             PagingInfo(page = page.number, totalPages = page.totalPages),
             searchRadiusKm
         )
+    }
+    fun searchByNameForRegistration(query: String): List<ParkingSimpleResponse> {
+        if (query.isBlank()) {
+            return emptyList()
+        }
+        val documents = parkingLotSearchRepository.searchByName(query)
+        return documents.map { doc ->
+            ParkingSimpleResponse(
+                parkingCode = doc.parkingCode,
+                name = doc.name,
+                address = doc.address
+            )
+        }
     }
 }

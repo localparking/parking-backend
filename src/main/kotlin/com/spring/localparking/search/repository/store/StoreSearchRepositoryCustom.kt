@@ -19,4 +19,7 @@ interface StoreSearchRepositoryCustom {
         pageable: Pageable,
         searchRadiusKm: Int
     ): Page<StoreDocument>
+
+    fun searchByName(query: String): List<StoreDocument>
+
 }

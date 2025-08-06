@@ -9,6 +9,7 @@ import com.spring.localparking.global.exception.CustomException
 import com.spring.localparking.search.dto.StoreListResponse
 import com.spring.localparking.search.dto.StoreSearchRequest
 import com.spring.localparking.search.domain.StoreDocument
+import com.spring.localparking.search.dto.StoreSimpleResponse
 import com.spring.localparking.search.repository.store.StoreSearchRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -69,5 +70,18 @@ class StoreSearchService(
             paging = PagingInfo(page = page.number, totalPages = page.totalPages),
             searchRadiusKm = searchRadiusKm
         )
+    }
+    fun searchByNameForRegistration(query: String): List<StoreSimpleResponse> {
+        if (query.isBlank()) {
+            return emptyList()
+        }
+        val documents = storeSearchRepository.searchByName(query)
+        return documents.map { doc ->
+            StoreSimpleResponse(
+                storeId = doc.id,
+                name = doc.name,
+                address = doc.fullDoroAddress ?: doc.fullJibeonAddress
+            )
+        }
     }
 }

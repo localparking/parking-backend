@@ -11,6 +11,7 @@ import com.spring.localparking.search.domain.StoreDocument
 import com.spring.localparking.search.dto.StoreSearchRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.elasticsearch.client.elc.NativeQuery
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
@@ -23,6 +24,22 @@ import java.time.format.DateTimeFormatter
 class StoreSearchRepositoryImpl(
     private val operations: ElasticsearchOperations
 ) : StoreSearchRepositoryCustom {
+
+    override fun searchByName(query: String): List<StoreDocument> {
+        val nativeQuery = NativeQuery.builder()
+            .withQuery { q ->
+                q.wildcard { w ->
+                    w.field("name.keyword")
+                        .value("*$query*")
+                        .caseInsensitive(true)
+                }
+            }
+            .withPageable(PageRequest.of(0, 20))
+            .build()
+
+        val hits = operations.search(nativeQuery, StoreDocument::class.java)
+        return hits.map { it.content }.toList()
+    }
 
     override fun searchByFilters(
         request: StoreSearchRequest,

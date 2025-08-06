@@ -17,4 +17,6 @@ interface ParkingLotSearchRepositoryCustom {
         pageable: Pageable,
         searchRadiusKm: Int
     ): Page<ParkingLotDocument>
+
+    fun searchByName(query: String): List<ParkingLotDocument>
 }

@@ -12,6 +12,7 @@ import com.spring.localparking.search.dto.ParkingLotSearchRequest
 import org.springframework.context.annotation.Lazy
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.elasticsearch.client.elc.NativeQuery
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
@@ -27,6 +28,21 @@ import java.time.format.DateTimeFormatter
 class ParkingLotSearchRepositoryImpl(
     private val elasticsearchOperations: ElasticsearchOperations
 ) : ParkingLotSearchRepositoryCustom {
+    override fun searchByName(query: String): List<ParkingLotDocument> {
+        val nativeQuery = NativeQuery.builder()
+            .withQuery { q ->
+                q.wildcard { w ->
+                    w.field("name.keyword")
+                        .value("*$query*")
+                        .caseInsensitive(true)
+                }
+            }
+            .withPageable(PageRequest.of(0, 20))
+            .build()
+
+        val hits = elasticsearchOperations.search(nativeQuery, ParkingLotDocument::class.java)
+        return hits.map { it.content }.toList()
+    }
 
     /**
      * 지도 기반 필터 검색

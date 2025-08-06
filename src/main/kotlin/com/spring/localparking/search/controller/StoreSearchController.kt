@@ -6,6 +6,7 @@ import com.spring.localparking.search.dto.page.PageResponse
 import com.spring.localparking.search.dto.page.PageSearchResponse
 import com.spring.localparking.search.dto.StoreListResponse
 import com.spring.localparking.search.dto.StoreSearchRequest
+import com.spring.localparking.search.dto.StoreSimpleResponse
 import com.spring.localparking.search.service.StoreSearchService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -30,6 +31,14 @@ class StoreSearchController(
     fun searchByText(@RequestBody request: StoreSearchRequest):
             ResponseEntity<ResponseDto<PageSearchResponse<StoreListResponse>>> {
         val results = storeSearchService.searchByText(request)
+        return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, results))
+    }
+
+    @Operation(summary = "점주 가입을 위한 가게 이름 검색", description = "필터 없이 가게 이름으로만 전체 가게를 검색하는 API입니다.")
+    @GetMapping("/text-search/name")
+    fun searchForRegistration(@RequestParam query: String):
+            ResponseEntity<ResponseDto<List<StoreSimpleResponse>>> {
+        val results = storeSearchService.searchByNameForRegistration(query)
         return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, results))
     }
 }
