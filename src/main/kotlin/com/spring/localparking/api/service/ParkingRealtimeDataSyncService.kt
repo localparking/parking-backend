@@ -16,7 +16,7 @@ class ParkingRealtimeDataSyncService(
     private val redisTemplate: StringRedisTemplate,
     private val parkingLotSearchRepository: ParkingLotSearchRepository
 ) {
-    //@Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 60000)
     fun syncRealtimeParkingData() {
         var totalUpdatedCount = 0
 

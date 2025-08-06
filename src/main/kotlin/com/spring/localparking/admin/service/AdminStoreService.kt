@@ -23,9 +23,9 @@ class AdminStoreService(
         }
     }
     @Transactional
-    fun processStorekeeperRequest(userId: Long, isApproved: Boolean) {
-        val user = userRepository.findById(userId)
-            .orElseThrow { CustomException(ErrorCode.USER_NOT_FOUND) }
+    fun processStorekeeperRequest(adminId: String, isApproved: Boolean) {
+        val user = userRepository.findByAdminId(adminId)
+            ?: throw CustomException(ErrorCode.USER_NOT_FOUND)
 
         if (user.registrationStatus != RequestStatus.PENDING) {
             throw CustomException(ErrorCode.STORE_ALREADY_REQUEST)

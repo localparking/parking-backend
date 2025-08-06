@@ -31,7 +31,7 @@ class ParkingStaticDataSyncService(
 //        syncStaticParkingData()
 //    }
 
-    //@Scheduled(cron = "0 0 2 * * MON")
+    @Scheduled(cron = "0 0 2 * * MON")
     @Transactional
     fun syncStaticParkingData() {
         log.info("==================================================")
