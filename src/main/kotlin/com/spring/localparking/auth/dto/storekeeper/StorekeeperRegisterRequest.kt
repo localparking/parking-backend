@@ -15,10 +15,12 @@ data class StorekeeperRegisterRequest(
     val email: String,
     @Schema(description = "사업자번호", required = true, example = "12345-67890")
     val businessNumber: String,
-    @Schema(description = "가게 이름", required = true, example = "맛있는 가게")
-    val storeName: String,
-    @Schema(description = "가게 주소", required = true)
-    val storeAddress: StoreAddressDto,
-    @Schema(description = "가게 카테고리", required = true, example = "1")
-    val categoryId: Long
+    @Schema(description = "기존 가게를 선택한 경우 가게 ID", example = "101")
+    val storeId: Long? = null,
+    @Schema(description = "가게 이름", example = "맛있는 가게")
+    val storeName: String? = null,
+    @Schema(description = "가게 주소")
+    val storeAddress: StoreAddressDto? = null,
+    @Schema(description = "가게 카테고리", example = "1")
+    val categoryId: Long? = null
 )

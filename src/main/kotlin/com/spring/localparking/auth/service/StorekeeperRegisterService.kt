@@ -49,29 +49,32 @@ class StorekeeperRegisterService (
         val encodedPassword = passwordEncoder.encode(request.password)
         val user = User.ofStorekeeper(request, encodedPassword)
         val savedUser = userRepository.saveAndFlush(user)
-        val fullAddress = with(request.storeAddress) {
-            "$sido $sigungu $doroName $buildingNo"
-        }.trim()
+        if (request.storeId != null) {
+            val existingStore = storeRepository.findById(request.storeId)
+                .orElseThrow { CustomException(ErrorCode.STORE_NOT_FOUND) }
 
-        val existingStore = storeRepository.findByNameAndLocationDoroAddressFullAddressAndOwnerIsNull(
-            request.storeName,
-            fullAddress
-        )
-        val store = if (existingStore != null) {
+            if (existingStore.owner != null) {
+                throw CustomException(ErrorCode.STOREKEEPER_ALREADY_EXIST)
+            }
             existingStore.owner = savedUser
             existingStore.businessNumber = request.businessNumber
-            storeRepository.saveAndFlush(existingStore)
+            storeRepository.save(existingStore)
+
         } else {
-            val newStore = Store.of(request, savedUser)
-            storeRepository.saveAndFlush(newStore)
+            if (request.storeName.isNullOrBlank() || request.storeAddress == null || request.categoryId == null) {
+                throw CustomException(ErrorCode.STORE_NAME_REQUIRED)
+            } else {
+                val categoryId = request.categoryId
+                val newStore = Store.of(request, savedUser)
+                storeRepository.saveAndFlush(newStore)
+                val category = categoryRepository.findById(categoryId)
+                    .orElseThrow { CustomException(ErrorCode.CATEGORY_NOT_FOUND) }
+                val storeCategory = StoreCategory(store = newStore, category = category)
+                newStore.categories.add(storeCategory)
+                storeRepository.save(newStore)
+            }
+            termService.processAgreements(savedUser, RegisterRequest(request.agreements))
         }
-
-        val category = categoryRepository.findById(request.categoryId)
-            .orElseThrow { CustomException(ErrorCode.CATEGORY_NOT_FOUND) }
-        val storeCategory = StoreCategory(store = store, category = category)
-        store.categories.add(storeCategory)
-
-        termService.processAgreements(savedUser, RegisterRequest(request.agreements))
     }
     @Transactional
     fun loginStorekeeper(req: AdminLoginRequest): TokenResponse {

@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface StoreRepository : JpaRepository<Store, Long> {
     fun findByBusinessNumber(businessNumber: String): Store?
-    fun findByNameAndLocationDoroAddressFullAddressAndOwnerIsNull(name: String, fullAddress: String): Store?
     @EntityGraph(attributePaths = [
         "storeParkingLots", "storeParkingLots.parkingLot",
         "storeParkingLots.parkingLot.operatingHour", "storeParkingLots.parkingLot.feePolicy",

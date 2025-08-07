@@ -61,4 +61,6 @@ enum class ErrorCode(
     //STOREKEEPER
     PROCESSING_REQUEST(HttpStatus.BAD_REQUEST, "현재 심사가 진행 중입니다."),
     REJECTED_REQUEST(HttpStatus.BAD_REQUEST, "가입 신청이 거절되었습니다."),
+    STORE_NAME_REQUIRED(HttpStatus.BAD_REQUEST, "새로운 가게 등록을 위해 가게 이름과 주소는 필수입니다."),
+
 }

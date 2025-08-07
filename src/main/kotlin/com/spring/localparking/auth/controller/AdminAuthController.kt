@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*
 
 @Tag(name = "관리자 인증 컨트롤러", description = "관리자 인증 관련 API입니다.")
 @RestController
-@RequestMapping("admin/")
+@RequestMapping("/admin/auth")
 class AdminAuthController(
     private val tokenService: TokenService,
     private val authenticationManager: AuthenticationManager,
