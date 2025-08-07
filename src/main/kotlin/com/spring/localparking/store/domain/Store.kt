@@ -35,7 +35,7 @@ data class Store(
     @JoinColumn(name = "operating_hour_id")
     var operatingHour: OperatingHour? = null,
 
-    val tel: String?=null,
+    var tel: String?=null,
 
     @Enumerated(EnumType.STRING)
     var storeType: StoreType? = StoreType.GENERAL,
