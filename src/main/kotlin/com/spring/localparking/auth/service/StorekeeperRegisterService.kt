@@ -33,6 +33,10 @@ class StorekeeperRegisterService (
     private val tokenService: TokenService,
     private val jwtUtil: JwtUtil
 ){
+
+    fun isAdminIdExists(adminId: String): Boolean {
+        return userRepository.findByAdminId(adminId) != null
+    }
     @Transactional
     fun registerStorekeeper(request: StorekeeperRegisterRequest) {
         if (userRepository.findByAdminId(request.adminId) != null) {
