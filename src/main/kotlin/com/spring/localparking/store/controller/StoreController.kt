@@ -4,6 +4,7 @@ import com.spring.localparking.global.response.ResponseDto
 import com.spring.localparking.global.response.SuccessCode
 import com.spring.localparking.store.dto.*
 import com.spring.localparking.store.service.StoreService
+import com.spring.localparking.storekeeper.dto.ProductResponseDto
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity

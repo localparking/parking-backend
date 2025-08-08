@@ -6,9 +6,12 @@ import com.spring.localparking.global.response.ResponseDto
 import com.spring.localparking.global.response.SuccessCode
 import com.spring.localparking.storekeeper.dto.MyStoreResponse
 import com.spring.localparking.storekeeper.dto.MyStoreUpdateRequest
+import com.spring.localparking.storekeeper.dto.ProductRequestDto
+import com.spring.localparking.storekeeper.dto.ProductResponseDto
 import com.spring.localparking.storekeeper.service.StorekeeperService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -37,6 +40,49 @@ class StorekeeperController(
     ): ResponseEntity<ResponseDto<Unit>> {
         val userId = principal.id ?: throw UnauthorizedException()
         storekeeperService.updateMyStoreInfo(userId, request)
+        return ResponseEntity.ok(ResponseDto.empty(SuccessCode.OK))
+    }
+    @Operation(summary = "가게 상품 추가", description = "내 가게에 새로운 상품을 등록합니다.")
+    @PostMapping("/products")
+    fun addProduct(
+        @AuthenticationPrincipal principal: CustomPrincipal,
+        @Valid @RequestBody request: ProductRequestDto
+    ): ResponseEntity<ResponseDto<ProductResponseDto>> {
+        val userId = principal.id ?: throw UnauthorizedException()
+        val productResponse = storekeeperService.addProduct(userId, request)
+        return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, productResponse))
+    }
+
+    @Operation(summary = "가게 상품 목록 조회", description = "내 가게에 등록된 모든 상품 목록을 조회합니다.")
+    @GetMapping("/products")
+    fun getProducts(
+        @AuthenticationPrincipal principal: CustomPrincipal
+    ): ResponseEntity<ResponseDto<List<ProductResponseDto>>> {
+        val userId = principal.id ?: throw UnauthorizedException()
+        val products = storekeeperService.getProductsByStore(userId)
+        return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, products))
+    }
+
+    @Operation(summary = "가게 상품 수정", description = "내 가게의 특정 상품 정보를 수정합니다.")
+    @PutMapping("/products/{productId}")
+    fun updateProduct(
+        @AuthenticationPrincipal principal: CustomPrincipal,
+        @PathVariable productId: Long,
+        @Valid @RequestBody request: ProductRequestDto
+    ): ResponseEntity<ResponseDto<ProductResponseDto>> {
+        val userId = principal.id ?: throw UnauthorizedException()
+        val updatedProduct = storekeeperService.updateProduct(userId, productId, request)
+        return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, updatedProduct))
+    }
+
+    @Operation(summary = "가게 상품 삭제", description = "내 가게의 특정 상품을 삭제합니다.")
+    @DeleteMapping("/products/{productId}")
+    fun deleteProduct(
+        @AuthenticationPrincipal principal: CustomPrincipal,
+        @PathVariable productId: Long
+    ): ResponseEntity<ResponseDto<Unit>> {
+        val userId = principal.id ?: throw UnauthorizedException()
+        storekeeperService.deleteProduct(userId, productId)
         return ResponseEntity.ok(ResponseDto.empty(SuccessCode.OK))
     }
 }

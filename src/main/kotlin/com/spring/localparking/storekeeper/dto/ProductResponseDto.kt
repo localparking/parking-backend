@@ -1,4 +1,4 @@
-package com.spring.localparking.store.dto
+package com.spring.localparking.storekeeper.dto
 
 import com.spring.localparking.store.domain.Product
 import io.swagger.v3.oas.annotations.media.Schema

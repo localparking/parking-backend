@@ -2,13 +2,18 @@ package com.spring.localparking.storekeeper.service
 
 import com.spring.global.exception.ErrorCode
 import com.spring.localparking.category.repository.CategoryRepository
+import com.spring.localparking.global.dto.StoreType
 import com.spring.localparking.global.exception.CustomException
 import com.spring.localparking.operatingHour.domain.OperatingHour
 import com.spring.localparking.operatingHour.domain.TimeSlot
+import com.spring.localparking.store.domain.Product
 import com.spring.localparking.store.domain.StoreCategory
+import com.spring.localparking.store.repository.ProductRepository
+import com.spring.localparking.storekeeper.dto.ProductResponseDto
 import com.spring.localparking.store.repository.StoreRepository
 import com.spring.localparking.storekeeper.dto.MyStoreResponse
 import com.spring.localparking.storekeeper.dto.MyStoreUpdateRequest
+import com.spring.localparking.storekeeper.dto.ProductRequestDto
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.DayOfWeek
@@ -18,7 +23,8 @@ import java.time.format.DateTimeFormatter
 @Service
 class StorekeeperService(
     private val storeRepository: StoreRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
+    private val productRepository: ProductRepository
 ) {
     @Transactional(readOnly = true)
     fun getMyStoreInfo(userId: Long): MyStoreResponse {
@@ -82,4 +88,65 @@ class StorekeeperService(
             DayOfWeek.SUNDAY to "일"
         )
     }
+
+    @Transactional
+    fun addProduct(userId: Long, request: ProductRequestDto): ProductResponseDto {
+        val store = storeRepository.findByOwnerId(userId)
+            ?: throw CustomException(ErrorCode.STORE_NOT_FOUND)
+
+        val newProduct = Product(
+            name = request.name,
+            imageUrl = request.imageUrl,
+            description = request.description,
+            price = request.price,
+            store = store
+        )
+        store.storeType = StoreType.PRODUCT_DETAIL
+        storeRepository.save(store)
+        val savedProduct = productRepository.save(newProduct)
+        return ProductResponseDto.from(savedProduct)
+    }
+
+    @Transactional(readOnly = true)
+    fun getProductsByStore(userId: Long): List<ProductResponseDto> {
+        val store = storeRepository.findByOwnerId(userId)
+            ?: throw CustomException(ErrorCode.STORE_NOT_FOUND)
+        return store.products.map { ProductResponseDto.from(it) }
+    }
+
+    @Transactional
+    fun updateProduct(userId: Long, productId: Long, request: ProductRequestDto): ProductResponseDto {
+        val product = productRepository.findById(productId)
+            .orElseThrow { CustomException(ErrorCode.PRODUCT_NOT_FOUND) }
+
+        if (product.store.owner?.id != userId) {
+            throw CustomException(ErrorCode.ACCESS_DENIED)
+        }
+
+        product.updateProduct(
+            name = request.name,
+            imageUrl = request.imageUrl,
+            description = request.description,
+            price = request.price
+        )
+        val updatedProduct = productRepository.save(product)
+        return ProductResponseDto.from(updatedProduct)
+    }
+
+    @Transactional
+    fun deleteProduct(userId: Long, productId: Long) {
+        val product = productRepository.findById(productId)
+            .orElseThrow { CustomException(ErrorCode.PRODUCT_NOT_FOUND) }
+        if (product.store.owner?.id != userId) {
+            throw CustomException(ErrorCode.ACCESS_DENIED)
+        }
+        val store = product.store
+        productRepository.delete(product)
+
+        if (productRepository.countByStoreId(store.id) == 0L) {
+            store.storeType = StoreType.GENERAL
+            storeRepository.save(store)
+        }
+    }
+
 }
