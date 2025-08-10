@@ -1,5 +1,7 @@
 package com.spring.localparking.api.dto
 
+import java.time.DayOfWeek
+
 object ApiConstants {
 
     val SEOUL_API_AREAS = listOf(
@@ -18,5 +20,11 @@ object ApiConstants {
         "의정부 신세계백화점", "판교 현대백화점", "현대시티아울렛 동대문점", "현대프리미엄아울렛 김포점", "현대프리미엄아울렛 송도점",
         "고척스카이돔", "상암월드컵경기장", "수원월드컵경기장", "잠실종합운동장", "장충체육관", "코엑스", "킨텍스", "인천국제공항",
         "김포국제공항", "광명역", "수원역", "의정부역", "김포공항", "인천공항"
+    )
+
+    val KOR_DAY_MAP = mapOf(
+        DayOfWeek.MONDAY to "월", DayOfWeek.TUESDAY to "화", DayOfWeek.WEDNESDAY to "수",
+        DayOfWeek.THURSDAY to "목", DayOfWeek.FRIDAY to "금", DayOfWeek.SATURDAY to "토",
+        DayOfWeek.SUNDAY to "일"
     )
 }

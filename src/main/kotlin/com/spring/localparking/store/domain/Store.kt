@@ -1,9 +1,7 @@
 package com.spring.localparking.store.domain
 
-import com.spring.global.exception.ErrorCode
-import com.spring.localparking.auth.dto.storekeeper.StorekeeperRegisterRequest
+import com.spring.localparking.auth.dto.storekeeper.StoreManualRequestDto
 import com.spring.localparking.global.dto.StoreType
-import com.spring.localparking.global.exception.CustomException
 import com.spring.localparking.operatingHour.domain.OperatingHour
 import com.spring.localparking.store.domain.location.DoroAddress
 import com.spring.localparking.store.domain.location.Location
@@ -55,35 +53,35 @@ data class Store(
 
     ) {
     companion object {
-        fun of(request: StorekeeperRegisterRequest, owner: User): Store {
-            val storeName = request.storeName ?: throw CustomException(ErrorCode.STORE_NAME_REQUIRED)
-            val storeAddress = request.storeAddress ?: throw CustomException(ErrorCode.STORE_NAME_REQUIRED)
+        fun of(storeInfo: StoreManualRequestDto, businessNumber: String, owner: User): Store {
+            val storeAddress = storeInfo.storeAddress
 
             val fullAddress = with(storeAddress) {
                 "$sido $sigungu $doroName $buildingNo"
             }.trim()
 
             val doroAddress = DoroAddress(
-                sido = storeAddress.sido,
-                sigungu = storeAddress.sigungu,
-                doroName = storeAddress.doroName,
-                buildingNo = storeAddress.buildingNo,
+                sido = storeAddress.sido!!,
+                sigungu = storeAddress.sigungu!!,
+                doroName = storeAddress.doroName!!,
+                buildingNo = storeAddress.buildingNo!!,
                 fullAddress = fullAddress
             )
 
             val location = Location(
+                id = 0L,
                 doroAddress = doroAddress,
                 jibeonAddress = null,
-                lat = storeAddress.lat,
-                lon = storeAddress.lon,
-                id = 0L
+                lat = storeAddress.lat!!,
+                lon = storeAddress.lon!!
             )
 
             return Store(
-                name = storeName,
-                businessNumber = request.businessNumber,
+                name = storeInfo.storeName!!,
+                businessNumber = businessNumber,
                 location = location,
-                owner = owner
+                owner = owner,
+                tel = storeInfo.tel
             )
         }
     }

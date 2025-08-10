@@ -36,11 +36,11 @@ class StorekeeperController(
     @PutMapping("/my-store")
     fun updateMyStoreInfo(
         @AuthenticationPrincipal principal: CustomPrincipal,
-        @RequestBody request: MyStoreUpdateRequest
-    ): ResponseEntity<ResponseDto<Unit>> {
+        @Valid @RequestBody request: MyStoreUpdateRequest
+    ): ResponseEntity<ResponseDto<MyStoreResponse>> {
         val userId = principal.id ?: throw UnauthorizedException()
-        storekeeperService.updateMyStoreInfo(userId, request)
-        return ResponseEntity.ok(ResponseDto.empty(SuccessCode.OK))
+        val response = storekeeperService.updateMyStoreInfo(userId, request)
+        return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, response))
     }
     @Operation(summary = "가게 상품 추가", description = "내 가게에 새로운 상품을 등록합니다.")
     @PostMapping("/products")

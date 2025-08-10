@@ -134,8 +134,8 @@ class ParkingStaticDataSyncService(
 
     private fun buildFeePolicy(info: ParkingInfo): FeePolicy =
         FeePolicy(
-            baseFee = info.baseFee?.toIntOrNull(),
-            baseTimeMin = info.baseTime?.toIntOrNull(),
+            baseFee = info.baseFee?.toIntOrNull() ?: 0,
+            baseTimeMin = info.baseTime?.toIntOrNull() ?: 0,
             additionalFee = info.additionalFee?.toIntOrNull(),
             additionalTimeMin = info.additionalTime?.toIntOrNull()
         )

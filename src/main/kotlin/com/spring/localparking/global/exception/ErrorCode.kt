@@ -61,6 +61,10 @@ enum class ErrorCode(
     //STOREKEEPER
     PROCESSING_REQUEST(HttpStatus.BAD_REQUEST, "현재 심사가 진행 중입니다."),
     REJECTED_REQUEST(HttpStatus.BAD_REQUEST, "가입 신청이 거절되었습니다."),
-    STORE_NAME_REQUIRED(HttpStatus.BAD_REQUEST, "새로운 가게 등록을 위해 가게 이름과 주소는 필수입니다."),
+    REQUIRED_ID_OR_INFO(HttpStatus.BAD_REQUEST, "아이디 값 또는 정보를 필수로 입력해야합니다"),
+    PARKING_LOT_REQUIRED(HttpStatus.BAD_REQUEST, "최소 1개의 주차장은 필수입니다."),
+    ALREADY_USED_PARKING_CODE(HttpStatus.BAD_REQUEST, "이미 사용 중인 주차장 코드입니다."),
+    BENEFIT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 혜택입니다."),
+
 
 }
