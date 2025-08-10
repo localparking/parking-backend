@@ -6,8 +6,8 @@ import com.spring.localparking.api.dto.ParkingInfo
 import com.spring.localparking.operatingHour.domain.*
 import com.spring.localparking.parking.domain.*
 import com.spring.localparking.parking.repository.ParkingLotRepository
-import com.spring.localparking.parking.repository.ParkingLotSearchRepository
-import jakarta.annotation.PostConstruct
+import com.spring.localparking.search.domain.ParkingLotDocument
+import com.spring.localparking.search.repository.parking.ParkingLotSearchRepository
 import org.slf4j.LoggerFactory
 import org.springframework.data.elasticsearch.core.geo.GeoPoint
 import org.springframework.scheduling.annotation.Scheduled
@@ -134,8 +134,8 @@ class ParkingStaticDataSyncService(
 
     private fun buildFeePolicy(info: ParkingInfo): FeePolicy =
         FeePolicy(
-            baseFee = info.baseFee?.toIntOrNull(),
-            baseTimeMin = info.baseTime?.toIntOrNull(),
+            baseFee = info.baseFee?.toIntOrNull() ?: 0,
+            baseTimeMin = info.baseTime?.toIntOrNull() ?: 0,
             additionalFee = info.additionalFee?.toIntOrNull(),
             additionalTimeMin = info.additionalTime?.toIntOrNull()
         )

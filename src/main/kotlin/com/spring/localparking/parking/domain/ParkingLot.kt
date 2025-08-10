@@ -1,6 +1,8 @@
 package com.spring.localparking.parking.domain
 
+import com.spring.global.exception.ErrorCode
 import com.spring.localparking.api.dto.ParkingInfo
+import com.spring.localparking.global.exception.CustomException
 import com.spring.localparking.operatingHour.domain.OperatingHour
 import com.spring.localparking.store.domain.StoreParkingLot
 import jakarta.persistence.*
@@ -17,9 +19,9 @@ class ParkingLot (
     var isRealtime: Boolean = false,
     var isFree: Boolean = false,
     var tel: String? = null,
-    var address: String? = null,
-    var lat: Double? = null,
-    var lon: Double? = null,
+    var address: String,
+    var lat: Double,
+    var lon: Double,
     var hourlyFee: Int? = null,
 
     @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
@@ -35,14 +37,14 @@ class ParkingLot (
 ) {
     fun updateInfo(info: ParkingInfo, feePolicy: FeePolicy, operatingHour: OperatingHour?, hourlyFee: Int?) {
         this.name = info.parkingName
-        this.address = info.address
+        this.address = info.address?: throw CustomException(ErrorCode.INVALID_INPUT_VALUE)
         this.parkingType = info.parkingType
         this.capacity = info.capacity?.toIntOrNull()
         this.isRealtime = info.isRealtimeEnabled
         this.isFree = info.isPaid == "N"
         this.tel = info.tel
-        this.lat = info.latitude?.toDoubleOrNull()
-        this.lon = info.longitude?.toDoubleOrNull()
+        this.lat = info.latitude?.toDoubleOrNull() ?: throw CustomException(ErrorCode.INVALID_INPUT_VALUE)
+        this.lon = info.longitude?.toDoubleOrNull() ?: throw CustomException(ErrorCode.INVALID_INPUT_VALUE)
         this.feePolicy = feePolicy
         this.operatingHour = operatingHour
         this.hourlyFee = hourlyFee
@@ -53,14 +55,14 @@ class ParkingLot (
             return ParkingLot(
                 parkingCode = info.parkingCode,
                 name = info.parkingName,
-                address = info.address,
+                address = info.address?: "",
                 parkingType = info.parkingType,
                 capacity = info.capacity?.toIntOrNull(),
                 isRealtime = info.isRealtimeEnabled,
                 isFree = info.isPaid == "N",
                 tel = info.tel,
-                lat = info.latitude?.toDoubleOrNull(),
-                lon = info.longitude?.toDoubleOrNull(),
+                lat = info.latitude?.toDoubleOrNull() ?: throw CustomException(ErrorCode.INVALID_INPUT_VALUE),
+                lon = info.longitude?.toDoubleOrNull() ?: throw CustomException(ErrorCode.INVALID_INPUT_VALUE),
                 feePolicy = feePolicy,
                 operatingHour = operatingHour,
                 hourlyFee = hourlyFee

@@ -2,7 +2,7 @@ package com.spring.localparking.search.controller
 
 import com.spring.localparking.global.response.ResponseDto
 import com.spring.localparking.global.response.SuccessCode
-import com.spring.localparking.search.dto.SearchItemResponse
+import com.spring.localparking.search.dto.naver.SearchItemResponse
 import com.spring.localparking.search.service.NaverSearchService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag

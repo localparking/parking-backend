@@ -10,20 +10,20 @@ class FeePolicy (
     val id: Long = 0,
 
     @Column(name = "base_fee")
-    val baseFee: Int?,
+    var baseFee: Int,
 
     @Column(name = "base_time_min")
-    val baseTimeMin: Int?,
+    var baseTimeMin: Int,
 
     @Column(name = "additional_fee")
-    val additionalFee: Int?,
+    var additionalFee: Int?,
 
     @Column(name = "additional_time_min")
-    val additionalTimeMin: Int?,
+    var additionalTimeMin: Int?,
 
     @Column(name = "day_pass_fee")
-    val dayPassFee: Int? = null,
+    var dayPassFee: Int? = null,
 
     @Column(name = "mon_pass_fee")
-    val monthlyPassFee: Int? = null
+    var monthlyPassFee: Int? = null
 )

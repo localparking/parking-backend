@@ -2,7 +2,7 @@ package com.spring.localparking.api.service
 
 import com.spring.localparking.api.config.SeoulParkingApiClient
 import com.spring.localparking.api.dto.ApiConstants
-import com.spring.localparking.parking.repository.ParkingLotSearchRepository
+import com.spring.localparking.search.repository.parking.ParkingLotSearchRepository
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service

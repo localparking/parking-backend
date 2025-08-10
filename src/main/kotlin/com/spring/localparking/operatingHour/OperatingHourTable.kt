@@ -4,6 +4,7 @@ import com.spring.localparking.operatingHour.domain.OperatingHour
 import com.spring.localparking.operatingHour.domain.NormalizedSlot
 import com.spring.localparking.operatingHour.domain.isValid
 import com.spring.localparking.parking.domain.normalizedSlots
+import io.swagger.v3.oas.annotations.media.Schema
 import java.time.DayOfWeek
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -20,7 +21,9 @@ private val KOR_DAY = mapOf(
 )
 
 data class OperatingSlotDto(
+    @Schema(description = "영업 시작 시간", example = "09:00")
     val begin: String,
+    @Schema(description = "영업 종료 시간", example = "18:00")
     val end: String,
 )
 
