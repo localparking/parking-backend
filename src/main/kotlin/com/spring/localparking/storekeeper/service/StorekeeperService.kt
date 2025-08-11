@@ -12,6 +12,7 @@ import com.spring.localparking.parking.domain.FeePolicy
 import com.spring.localparking.parking.domain.ParkingLot
 import com.spring.localparking.parking.repository.ParkingLotRepository
 import com.spring.localparking.parking.service.ParkingLotUpdater
+import com.spring.localparking.s3.service.ImageUploadService
 import com.spring.localparking.store.domain.Product
 import com.spring.localparking.store.domain.StoreCategory
 import com.spring.localparking.store.domain.StoreParkingLot
@@ -20,6 +21,7 @@ import com.spring.localparking.store.repository.StoreRepository
 import com.spring.localparking.storekeeper.domain.StoreParkingBenefit
 import com.spring.localparking.storekeeper.dto.*
 import com.spring.localparking.storekeeper.repository.StoreParkingBenefitRepository
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -31,8 +33,15 @@ class StorekeeperService(
     private val productRepository: ProductRepository,
     private val parkingLotRepository: ParkingLotRepository,
     private val parkingLotUpdater: ParkingLotUpdater,
-    private val benefitRepository: StoreParkingBenefitRepository
+    private val benefitRepository: StoreParkingBenefitRepository,
+    private val imageUploadService: ImageUploadService
 ) {
+    @Value("\${spring.cloud.aws.s3.endpoint}")
+    private lateinit var s3Endpoint: String
+
+    @Value("\${spring.cloud.aws.s3.bucket-name}")
+
+    private lateinit var bucketName: String
     @Transactional(readOnly = true)
     fun getMyStoreInfo(userId: Long): MyStoreResponse {
         val store = storeRepository.findByOwnerId(userId)
@@ -68,10 +77,10 @@ class StorekeeperService(
     fun addProduct(userId: Long, request: ProductRequestDto): ProductResponseDto {
         val store = storeRepository.findByOwnerId(userId)
             ?: throw CustomException(ErrorCode.STORE_NOT_FOUND)
-
+        val imageUrl = "$s3Endpoint/$bucketName/${request.imageKey}"
         val newProduct = Product(
             name = request.name,
-            imageUrl = request.imageUrl,
+            imageUrl = imageUrl,
             description = request.description,
             price = request.price,
             store = store
@@ -96,13 +105,18 @@ class StorekeeperService(
         if (product.store.owner?.id != userId) {
             throw CustomException(ErrorCode.ACCESS_DENIED)
         }
+        val oldImageUrl = product.imageUrl
+        val newImageUrl = "$s3Endpoint/$bucketName/${request.imageKey}"
         product.updateProduct(
             name = request.name,
-            imageUrl = request.imageUrl,
+            imageUrl = newImageUrl,
             description = request.description,
             price = request.price
         )
         val updatedProduct = productRepository.save(product)
+        if (!oldImageUrl.isNullOrBlank() && oldImageUrl != newImageUrl) {
+            imageUploadService.delete(oldImageUrl)
+        }
         return ProductResponseDto.from(updatedProduct)
     }
 
@@ -113,9 +127,10 @@ class StorekeeperService(
         if (product.store.owner?.id != userId) {
             throw CustomException(ErrorCode.ACCESS_DENIED)
         }
+        val imageUrlToDelete = product.imageUrl
         val store = product.store
         productRepository.delete(product)
-
+        imageUploadService.delete(imageUrlToDelete)
         if (productRepository.countByStoreId(store.id) == 0L) {
             store.storeType = StoreType.GENERAL
             storeRepository.save(store)

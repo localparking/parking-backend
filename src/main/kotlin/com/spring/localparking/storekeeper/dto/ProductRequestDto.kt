@@ -11,8 +11,8 @@ data class ProductRequestDto(
     @Schema(description = "상품 이름", example = "마라탕")
     val name: String,
 
-    @Schema(description = "상품 이미지 URL", example = "https://example.com/image.jpg")
-    val imageUrl: String,
+    @Schema(description = "상품 이미지 Key")
+    val imageKey: String,
 
     @Schema(description = "상품 설명", example = "맛있는 마라탕~!")
     val description: String,
