@@ -66,5 +66,8 @@ enum class ErrorCode(
     ALREADY_USED_PARKING_CODE(HttpStatus.BAD_REQUEST, "이미 사용 중인 주차장 코드입니다."),
     BENEFIT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 혜택입니다."),
 
+    //FILE
+    FILE_NOT_FOUND(HttpStatus.BAD_REQUEST, "파일이 존재하지 않습니다."),
+
 
 }

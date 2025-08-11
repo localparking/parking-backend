@@ -29,7 +29,8 @@ class SecurityConfig(
     private val jwtAuthFilter: JwtAuthFilter,
     private val kakaoOauth2UserService: KakaoOauth2UserService,
     private val oAuth2SuccessHandler: OAuth2SuccessHandler,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val cookieAuthorizationRequestRepository: CookieAuthorizationRequestRepository
 ) {
 
     @Bean
@@ -42,23 +43,27 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests {
                 it.requestMatchers(
+                    "/login/**, /oauth2/**",
                     "/admin/auth/login",
                     "/auth/login/**",
-                    "/swagger-ui/**",
-                    "/v3/api-docs/**",
-                    "/swagger-resources/**",
-                    "/webjars/**",
+                    "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**",
                     "/store/**",
                     "/parking/**",
                     "/category/**",
                     "/text-search",
-                    "/storekeeper/**",
+                    "/storekeeper/check-id", "/storekeeper/register","/storekeeper/login"
                 ).permitAll()
                     .requestMatchers("/admin/**").hasRole("ADMIN")
+                    .requestMatchers("/storekeeper/**").hasRole("STOREKEEPER")
                     .anyRequest().authenticated()
             }
             .oauth2Login {
-                it.userInfoEndpoint { u -> u.userService(kakaoOauth2UserService) }
+                it.authorizationEndpoint { endpoint ->
+                    endpoint.authorizationRequestRepository(cookieAuthorizationRequestRepository)
+                }
+                it.userInfoEndpoint { u ->
+                    u.userService(kakaoOauth2UserService)
+                }
                     .successHandler(oAuth2SuccessHandler)
             }
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
