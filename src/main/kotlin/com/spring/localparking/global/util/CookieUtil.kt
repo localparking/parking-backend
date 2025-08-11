@@ -1,5 +1,7 @@
 package com.spring.localparking.global.util
 
+import jakarta.servlet.http.Cookie
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.ResponseCookie
 
 object CookieUtil {
@@ -7,6 +9,10 @@ object CookieUtil {
     private const val REFRESH_TOKEN_EXPIRY = 60 * 60 * 24 * 7L
     private const val ACCESS_TOKEN_EXPIRY = 60 * 15L // 15분
     private val aDomain = ".townparking.store"
+
+    fun getCookie(request: HttpServletRequest, name: String): Cookie? {
+        return request.cookies?.find { it.name == name }
+    }
 
     fun createAccessTokenCookie(accessToken: String, maxAge: Long = ACCESS_TOKEN_EXPIRY): ResponseCookie =
         ResponseCookie.from("accessToken", accessToken)
@@ -27,5 +33,4 @@ object CookieUtil {
             .sameSite("None")
             .domain(aDomain)
             .build()
-
 }

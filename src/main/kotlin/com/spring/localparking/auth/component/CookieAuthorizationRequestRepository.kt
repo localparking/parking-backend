@@ -1,23 +1,23 @@
 package com.spring.localparking.auth.component
 
 import com.nimbusds.oauth2.sdk.util.StringUtils
-import jakarta.servlet.http.Cookie // jakarta.servlet.http.Cookie 사용
+import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest
 import org.springframework.stereotype.Component
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
-import java.util.Base64
+import java.io.*
+import java.util.*
 
 @Component
 class CookieAuthorizationRequestRepository : AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 
-    val OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME = "oauth2_auth_request"
-    val REDIRECT_URI_PARAM_COOKIE_NAME = "redirect_uri"
+    companion object {
+        const val OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME = "oauth2_auth_request"
+        const val REDIRECT_URI_PARAM_COOKIE_NAME = "redirect_uri"
+    }
+
     private val cookieExpireSeconds = 180
 
     override fun loadAuthorizationRequest(request: HttpServletRequest): OAuth2AuthorizationRequest? {
@@ -88,7 +88,7 @@ class CookieAuthorizationRequestRepository : AuthorizationRequestRepository<OAut
             it.value = ""
             it.path = "/"
             it.maxAge = 0
-            domain?.let { cookieDomain -> it.domain = cookieDomain } // 삭제 시에도 동일한 도메인 명시
+            domain?.let { cookieDomain -> it.domain = cookieDomain }
             response.addCookie(it)
         }
     }

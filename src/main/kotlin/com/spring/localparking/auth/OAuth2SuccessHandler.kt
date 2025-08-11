@@ -1,7 +1,6 @@
-// localparking/auth/OAuth2SuccessHandler.kt
-
 package com.spring.localparking.auth
 
+import com.spring.localparking.auth.component.CookieAuthorizationRequestRepository
 import com.spring.localparking.auth.security.CustomPrincipal
 import com.spring.localparking.auth.service.TokenService
 import com.spring.localparking.global.util.CookieUtil
@@ -9,7 +8,7 @@ import com.spring.localparking.global.util.JwtUtil
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.core.Authentication
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler // 1. 상속 클래스 변경
 import org.springframework.stereotype.Component
 import org.springframework.web.util.UriComponentsBuilder
 import java.io.IOException
@@ -17,13 +16,13 @@ import java.io.IOException
 @Component
 class OAuth2SuccessHandler(
     private val jwtUtil: JwtUtil,
-    private val tokenService: TokenService
-) : AuthenticationSuccessHandler {
+    private val tokenService: TokenService,
+    private val cookieAuthorizationRequestRepository: CookieAuthorizationRequestRepository
+) : SimpleUrlAuthenticationSuccessHandler() {
 
-    private val allowedOrigins = setOf(
-        "http://localhost:3001",
-        "https://dev.townparking.store",
-        "https://townparking.store"
+    private val allowedRedirectUris = setOf(
+        "http://localhost:3001/login/success",
+        "https://townparking.store/login/success"
     )
 
     @Throws(IOException::class)
@@ -32,10 +31,14 @@ class OAuth2SuccessHandler(
         res: HttpServletResponse,
         auth: Authentication
     ) {
+        val targetUrl = determineTargetUrl(req, res, auth)
+
+        if (res.isCommitted) {
+            logger.debug("Response has already been committed. Unable to redirect to $targetUrl")
+            return
+        }
+
         val principal = auth.principal as CustomPrincipal
-
-        val redirectUrlBase = determineRedirectUrl(req)
-
         val userId = principal.id!!
         val userRole = principal.role
 
@@ -47,31 +50,34 @@ class OAuth2SuccessHandler(
         res.addHeader("Set-Cookie", CookieUtil.createAccessTokenCookie(accessToken).toString())
         res.addHeader("Set-Cookie", CookieUtil.createRefreshTokenCookie(refreshToken).toString())
 
+        clearAuthenticationAttributes(req)
+        cookieAuthorizationRequestRepository.removeAuthorizationRequestCookies(req, res)
+
         val redirectUrl = UriComponentsBuilder
-            .fromUriString(redirectUrlBase) // 동적으로 결정된 URL 사용
+            .fromUriString(targetUrl)
             .queryParam("role", userRole)
             .queryParam("accessToken", accessToken)
             .queryParam("refreshToken", refreshToken)
             .build()
             .toUriString()
 
-        res.sendRedirect(redirectUrl)
+        redirectStrategy.sendRedirect(req, res, redirectUrl)
     }
 
-    private fun determineRedirectUrl(req: HttpServletRequest): String {
-        val origin = req.getHeader("Origin")
-
-        if (origin != null && allowedOrigins.contains(origin)) {
-            return "$origin/login/success"
+    override fun determineTargetUrl(
+        req: HttpServletRequest,
+        res: HttpServletResponse,
+        auth: Authentication
+    ): String {
+        val redirectUri = CookieUtil.getCookie(req, CookieAuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME)
+            ?.value
+        if (!redirectUri.isNullOrBlank() && isAuthorizedRedirectUri(redirectUri)) {
+            return redirectUri
         }
-        val referer = req.getHeader("Referer")
-        if (referer != null) {
-            val matchedOrigin = allowedOrigins.find { referer.startsWith(it) }
-            if (matchedOrigin != null) {
-                return "$matchedOrigin/login/success"
-            }
-        }
+        return "https://townparking.store/login/success"
+    }
 
-        return "http://localhost:3001/login/success"
+    private fun isAuthorizedRedirectUri(uri: String): Boolean {
+        return allowedRedirectUris.contains(uri)
     }
 }
