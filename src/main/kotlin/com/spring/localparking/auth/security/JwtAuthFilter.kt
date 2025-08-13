@@ -24,21 +24,24 @@ class JwtAuthFilter(
     private val userRepository: UserRepository
 ) : OncePerRequestFilter() {
     override fun shouldNotFilter(request: HttpServletRequest): Boolean {
+        println("JwtAuthFilter path=${request.servletPath} uri=${request.requestURI}")
         val path = request.servletPath?.takeIf { it.isNotBlank() } ?: request.requestURI ?: ""
-
-        if (request.method.equals("OPTIONS", ignoreCase = true)) return true
+        if (request.method.equals("OPTIONS", true)) return true
 
         if (path.startsWith("/oauth2") || path.startsWith("/login/oauth2")) return true
+        if (path.startsWith("/api/oauth2") || path.startsWith("/api/login/oauth2")) return true
 
-        if (
-            path.startsWith("/login/") ||
-            path.startsWith("/swagger") || path.startsWith("/v3/api-docs") || path.startsWith("/webjars") ||
-            path.startsWith("/store") || path.startsWith("/parking") || path.startsWith("/category") ||
-            path == "/text-search" || path.startsWith("/storekeeper")
-        ) return true
+        if (path.startsWith("/login/") || path.startsWith("/api/login/")) return true
+        if (path.startsWith("/swagger") || path.startsWith("/v3/api-docs") || path.startsWith("/webjars")) return true
+        if (path.startsWith("/store") || path.startsWith("/api/store")) return true
+        if (path.startsWith("/parking") || path.startsWith("/api/parking")) return true
+        if (path.startsWith("/category") || path.startsWith("/api/category")) return true
+        if (path == "/text-search" || path == "/api/text-search") return true
+        if (path.startsWith("/storekeeper") || path.startsWith("/api/storekeeper")) return true
 
         return false
     }
+
 
 
     override fun doFilterInternal(
