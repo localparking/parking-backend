@@ -8,7 +8,7 @@ object CookieUtil {
 
     private const val REFRESH_TOKEN_EXPIRY = 60 * 60 * 24 * 7L
     private const val ACCESS_TOKEN_EXPIRY = 60 * 15L // 15분
-    private val aDomain = ".townparking.store"
+    private val aDomain = "townparking.store"
 
     fun getCookie(request: HttpServletRequest, name: String): Cookie? {
         return request.cookies?.find { it.name == name }

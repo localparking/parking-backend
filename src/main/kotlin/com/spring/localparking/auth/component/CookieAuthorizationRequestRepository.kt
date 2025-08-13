@@ -35,14 +35,11 @@ class CookieAuthorizationRequestRepository : AuthorizationRequestRepository<OAut
             return
         }
 
-        val cookieDomain = getCookieDomain(request)
-
         addCookie(
             response,
             OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME,
             serialize(authorizationRequest),
-            cookieExpireSeconds,
-            cookieDomain
+            cookieExpireSeconds
         )
         val redirectUriAfterLogin = request.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME)
         if (StringUtils.isNotBlank(redirectUriAfterLogin)) {
@@ -50,8 +47,7 @@ class CookieAuthorizationRequestRepository : AuthorizationRequestRepository<OAut
                 response,
                 REDIRECT_URI_PARAM_COOKIE_NAME,
                 redirectUriAfterLogin,
-                cookieExpireSeconds,
-                cookieDomain
+                cookieExpireSeconds
             )
         }
     }
@@ -74,12 +70,11 @@ class CookieAuthorizationRequestRepository : AuthorizationRequestRepository<OAut
     private fun getCookie(request: HttpServletRequest, name: String) =
         request.cookies?.find { it.name == name }
 
-    private fun addCookie(response: HttpServletResponse, name: String, value: String, maxAge: Int, domain: String?) {
+    private fun addCookie(response: HttpServletResponse, name: String, value: String, maxAge: Int) {
         val cookie = Cookie(name, value)
         cookie.path = "/"
         cookie.isHttpOnly = true
         cookie.maxAge = maxAge
-        domain?.let { cookie.domain = it }
         response.addCookie(cookie)
     }
 
