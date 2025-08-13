@@ -1,6 +1,5 @@
 package com.spring.localparking.auth.controller
 
-
 import com.spring.localparking.auth.dto.TokenRequest
 import com.spring.localparking.auth.dto.TokenResponse
 import com.spring.localparking.auth.dto.social.AppleLoginRequest
@@ -16,6 +15,7 @@ import com.spring.localparking.user.exception.UserNotFoundException
 import com.spring.localparking.user.repository.UserRepository
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
@@ -35,71 +35,102 @@ class AuthController(
     @Operation(summary = "Access Token 갱신", description = "Access Token을 갱신하는 API입니다.")
     @PostMapping("/refresh")
     fun reissueRefreshToken(
+        req: HttpServletRequest,
         @AuthenticationPrincipal principal: CustomPrincipal
     ): ResponseEntity<ResponseDto<TokenResponse>> {
         val userId = requireNotNull(principal.id) { throw UnauthorizedException() }
-        val user = userRepository.findById(userId)
-            .orElseThrow { UserNotFoundException() }
+        val user = userRepository.findById(userId).orElseThrow { UserNotFoundException() }
+
         val accessToken = jwtUtil.generateAccessToken(userId, user.role.value)
         val refreshToken = jwtUtil.generateRefreshToken(userId)
         tokenService.renewRefreshToken(userId, refreshToken)
+
+        val accessCookie  = CookieUtil.createAccessTokenCookie(req, accessToken)
+        val refreshCookie = CookieUtil.createRefreshTokenCookie(req, refreshToken)
+
         val headers = HttpHeaders().apply {
-            add(HttpHeaders.SET_COOKIE, accessToken)
-            add(HttpHeaders.SET_COOKIE, refreshToken)
+            add(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
+            add(HttpHeaders.SET_COOKIE, accessCookie.toString())
+            add(HttpHeaders.SET_COOKIE, refreshCookie.toString())
         }
-        val body = ResponseDto.from(SuccessCode.OK,
+
+        val body = ResponseDto.from(
+            SuccessCode.OK,
             TokenResponse(accessToken, refreshToken)
         )
-        return ResponseEntity
-            .ok()
-            .headers(headers)
-            .body(body)
+
+        return ResponseEntity.ok().headers(headers).body(body)
     }
 
     @Operation(summary = "카카오 앱 소셜 로그인", description = "카카오 앱 소셜 로그인을 위한 API입니다.")
     @PostMapping("/login/kakao")
-    fun kakao(@RequestBody @Valid req: TokenRequest
+    fun kakao(
+        req: HttpServletRequest,
+        @RequestBody @Valid request: TokenRequest
     ): ResponseEntity<ResponseDto<TokenResponse>> {
-        val user = socialAuthService.loginKakao(req.token)
+        val user = socialAuthService.loginKakao(request.token)
+
         val accessToken = jwtUtil.generateAccessToken(user.id!!, user.role.value)
         val refreshToken = jwtUtil.generateRefreshToken(user.id!!)
         tokenService.saveRefreshToken(user.id!!, refreshToken)
+
+        val accessCookie  = CookieUtil.createAccessTokenCookie(req, accessToken)
+        val refreshCookie = CookieUtil.createRefreshTokenCookie(req, refreshToken)
+
+        val headers = HttpHeaders().apply {
+            add(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
+            add(HttpHeaders.SET_COOKIE, accessCookie.toString())
+            add(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+        }
+
         val res = TokenResponse(accessToken, refreshToken)
-        return ResponseEntity.ok(
-            ResponseDto.from(SuccessCode.USER_LOGGED_IN, res)
-        )
+        return ResponseEntity.ok().headers(headers)
+            .body(ResponseDto.from(SuccessCode.USER_LOGGED_IN, res))
     }
 
     @Operation(summary = "애플 앱 소셜 로그인", description = "애플 앱 소셜 로그인을 위한 API입니다.")
     @PostMapping("/login/apple")
-    fun apple(@RequestBody @Valid req: AppleLoginRequest
+    fun apple(
+        req: HttpServletRequest,
+        @RequestBody @Valid request: AppleLoginRequest
     ): ResponseEntity<ResponseDto<TokenResponse>> {
-        val user = socialAuthService.loginApple(req)
+        val user = socialAuthService.loginApple(request)
+
         val accessToken = jwtUtil.generateAccessToken(user.id!!, user.role.value)
         val refreshToken = jwtUtil.generateRefreshToken(user.id!!)
         tokenService.saveRefreshToken(user.id!!, refreshToken)
+
+        val accessCookie  = CookieUtil.createAccessTokenCookie(req, accessToken)
+        val refreshCookie = CookieUtil.createRefreshTokenCookie(req, refreshToken)
+
+        val headers = HttpHeaders().apply {
+            add(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
+            add(HttpHeaders.SET_COOKIE, accessCookie.toString())
+            add(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+        }
+
         val res = TokenResponse(accessToken, refreshToken)
-        return ResponseEntity.ok(
-            ResponseDto.from(SuccessCode.USER_LOGGED_IN, res)
-        )
+        return ResponseEntity.ok().headers(headers)
+            .body(ResponseDto.from(SuccessCode.USER_LOGGED_IN, res))
     }
 
     @PostMapping("/logout")
     fun logout(
+        req: HttpServletRequest,
         @AuthenticationPrincipal principal: CustomPrincipal
     ): ResponseEntity<ResponseDto<Unit>> {
         val userId = requireNotNull(principal.id) { throw UnauthorizedException() }
         tokenService.deleteRefreshToken(userId)
-        val accessTokenCookie = CookieUtil.createAccessTokenCookie(accessToken = "", maxAge = 0)
-        val refreshTokenCookie = CookieUtil.createRefreshTokenCookie(refreshToken = "", maxAge = 0)
+
+        val accessDel  = CookieUtil.deleteCookie(req, "accessToken")
+        val refreshDel = CookieUtil.deleteCookie(req, "refreshToken")
 
         val headers = HttpHeaders().apply {
-            add(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
-            add(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+            add(HttpHeaders.SET_COOKIE, accessDel.toString())
+            add(HttpHeaders.SET_COOKIE, refreshDel.toString())
         }
 
-        return ResponseEntity.ok()
-            .headers(headers)
+        return ResponseEntity.ok().headers(headers)
             .body(ResponseDto.empty(SuccessCode.OK))
     }
 }

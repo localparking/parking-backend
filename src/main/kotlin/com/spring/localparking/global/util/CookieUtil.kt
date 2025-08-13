@@ -50,4 +50,16 @@ object CookieUtil {
         if (domain != null) b.domain(domain)
         return b.build()
     }
+
+    fun deleteCookie(req: HttpServletRequest, name: String): ResponseCookie {
+        val domain = resolveCookieDomain(req)
+        val b = ResponseCookie.from(name, "")
+            .httpOnly(true)
+            .secure(true)
+            .path("/")
+            .sameSite("None")
+            .maxAge(0)
+        if (domain != null) b.domain(domain)
+        return b.build()
+    }
 }

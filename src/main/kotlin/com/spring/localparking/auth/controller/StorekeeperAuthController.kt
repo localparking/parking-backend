@@ -9,7 +9,9 @@ import com.spring.localparking.global.response.SuccessCode
 import com.spring.localparking.global.util.CookieUtil
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
+import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -32,20 +34,27 @@ class StorekeeperAuthController(
         @Valid @RequestBody request: StorekeeperRegisterRequest
     ): ResponseEntity<ResponseDto<Unit>> {
         storekeeperService.registerStorekeeper(request)
-        return ResponseEntity.ok(
-            ResponseDto.empty(SuccessCode.USER_CREATED))
+        return ResponseEntity.ok(ResponseDto.empty(SuccessCode.USER_CREATED))
     }
 
     @Operation(summary = "점주 로그인", description = "점주가 아이디와 비밀번호로 로그인하며, 심사 상태에 따라 결과가 달라집니다.")
     @PostMapping("/login")
     fun login(
-        @Valid @RequestBody req: AdminLoginRequest
+        req: HttpServletRequest,
+        @Valid @RequestBody body: AdminLoginRequest
     ): ResponseEntity<ResponseDto<TokenResponse>> {
-        val tokenResponse = storekeeperService.loginStorekeeper(req)
+        val tokenResponse = storekeeperService.loginStorekeeper(body)
+
+        val accessCookie  = CookieUtil.createAccessTokenCookie(req, tokenResponse.accessToken!!)
+        val refreshCookie = CookieUtil.createRefreshTokenCookie(req, tokenResponse.refreshToken!!)
+
+        val headers = HttpHeaders().apply {
+            add(HttpHeaders.AUTHORIZATION, "Bearer ${tokenResponse.accessToken}")
+            add(HttpHeaders.SET_COOKIE, accessCookie.toString())
+            add(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+        }
+
         val responseDto = ResponseDto.from(SuccessCode.USER_LOGGED_IN, tokenResponse)
-        return ResponseEntity.ok()
-            .header("Authorization", "Bearer ${tokenResponse.accessToken}")
-            .header("Set-Cookie", CookieUtil.createRefreshTokenCookie(tokenResponse.refreshToken!!).toString())
-            .body(responseDto)
+        return ResponseEntity.ok().headers(headers).body(responseDto)
     }
 }

@@ -11,6 +11,7 @@ import com.spring.localparking.user.repository.UserRepository
 import com.spring.localparking.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -42,18 +43,19 @@ class UserController (
     @Operation(summary = "회원 탈퇴", description = "로그인된 사용자의 계정을 탈퇴 처리합니다.")
     @PostMapping("/withdraw")
     fun withdrawUser(
+        req: HttpServletRequest,
         @AuthenticationPrincipal principal: CustomPrincipal?
     ): ResponseEntity<ResponseDto<Unit>> {
         val userId = principal?.id ?: throw UnauthorizedException()
 
         userService.withdrawUser(userId)
 
-        val accessTokenCookie = CookieUtil.createAccessTokenCookie(accessToken = "", maxAge = 0)
-        val refreshTokenCookie = CookieUtil.createRefreshTokenCookie(refreshToken = "", maxAge = 0)
+        val accessDel   = CookieUtil.deleteCookie(req, "accessToken")
+        val refreshDel  = CookieUtil.deleteCookie(req, "refreshToken")
 
         val headers = HttpHeaders().apply {
-            add(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
-            add(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+            add(HttpHeaders.SET_COOKIE, accessDel.toString())
+            add(HttpHeaders.SET_COOKIE, refreshDel.toString())
         }
         return ResponseEntity.ok()
             .headers(headers)

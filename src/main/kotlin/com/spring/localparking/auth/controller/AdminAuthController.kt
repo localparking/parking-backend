@@ -11,7 +11,9 @@ import com.spring.localparking.global.util.CookieUtil
 import com.spring.localparking.global.util.JwtUtil
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
+import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -28,25 +30,31 @@ class AdminAuthController(
 ) {
     @Operation(summary = "관리자 로그인", description = "관리자가 로그인하는 API입니다.")
     @PostMapping("/login")
-    fun login(@Valid @RequestBody req: AdminLoginRequest): ResponseEntity<TokenResponse> {
+    fun login(
+        req: HttpServletRequest,
+        @Valid @RequestBody adminReq: AdminLoginRequest
+    ): ResponseEntity<TokenResponse> {
         val auth: Authentication = authenticationManager.authenticate(
-            UsernamePasswordAuthenticationToken(req.adminId, req.password)
+            UsernamePasswordAuthenticationToken(adminReq.adminId, adminReq.password)
         )
         val principal = auth.principal as CustomPrincipal
-        if (principal.role != Role.ADMIN.value) {
-            throw AccessDeniedException()
-        }
+        if (principal.role != Role.ADMIN.value) throw AccessDeniedException()
+
         val userId = principal.id ?: throw UnauthorizedException()
         val accessToken = jwtUtil.generateAccessToken(userId, principal.role)
         val refreshToken = jwtUtil.generateRefreshToken(userId)
 
         tokenService.saveRefreshToken(userId, refreshToken)
 
-        val response = TokenResponse(accessToken, refreshToken)
+        val accessCookie  = CookieUtil.createAccessTokenCookie(req, accessToken)
+        val refreshCookie = CookieUtil.createRefreshTokenCookie(req, refreshToken)
+
+        val body = TokenResponse(accessToken, refreshToken)
 
         return ResponseEntity.ok()
-            .header("Authorization", "Bearer $accessToken")
-            .header("Set-Cookie", CookieUtil.createRefreshTokenCookie(refreshToken).toString())
-            .body(response)
+            .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
+            .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+            .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+            .body(body)
     }
 }
