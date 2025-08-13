@@ -23,6 +23,23 @@ class JwtAuthFilter(
     private val objectMapper: ObjectMapper,
     private val userRepository: UserRepository
 ) : OncePerRequestFilter() {
+    override fun shouldNotFilter(request: HttpServletRequest): Boolean {
+        val path = request.servletPath?.takeIf { it.isNotBlank() } ?: request.requestURI ?: ""
+
+        if (request.method.equals("OPTIONS", ignoreCase = true)) return true
+
+        if (path.startsWith("/oauth2") || path.startsWith("/login/oauth2")) return true
+
+        if (
+            path.startsWith("/login/") ||
+            path.startsWith("/swagger") || path.startsWith("/v3/api-docs") || path.startsWith("/webjars") ||
+            path.startsWith("/store") || path.startsWith("/parking") || path.startsWith("/category") ||
+            path == "/text-search" || path.startsWith("/storekeeper")
+        ) return true
+
+        return false
+    }
+
 
     override fun doFilterInternal(
         req: HttpServletRequest,
