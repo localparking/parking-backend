@@ -8,29 +8,46 @@ object CookieUtil {
 
     private const val REFRESH_TOKEN_EXPIRY = 60 * 60 * 24 * 7L
     private const val ACCESS_TOKEN_EXPIRY = 60 * 15L // 15분
-    private val aDomain = "townparking.store"
 
     fun getCookie(request: HttpServletRequest, name: String): Cookie? {
         return request.cookies?.find { it.name == name }
     }
 
-    fun createAccessTokenCookie(accessToken: String, maxAge: Long = ACCESS_TOKEN_EXPIRY): ResponseCookie =
-        ResponseCookie.from("accessToken", accessToken)
-            .httpOnly(true)
-            .secure(true)
-            .path("/")
-            .maxAge(maxAge)
-            .sameSite("None")
-            .domain(aDomain)
-            .build()
+    private fun resolveCookieDomain(req: HttpServletRequest): String? {
+        val rawHost = req.getHeader("X-Forwarded-Host")?.split(",")?.first()?.trim()
+            ?: req.serverName
+        val host = rawHost.substringBefore(":")
+        val isIp = Regex("""^\d{1,3}(\.\d{1,3}){3}$""").matches(host)
 
-    fun createRefreshTokenCookie(refreshToken: String, maxAge: Long = REFRESH_TOKEN_EXPIRY) : ResponseCookie =
-        ResponseCookie.from("refreshToken", refreshToken)
+        if (host.equals("localhost", true) || isIp) return null
+
+        return when {
+            host == "townparking.store" -> "townparking.store"
+            host.endsWith(".townparking.store") -> "townparking.store"
+            else -> null // 기타 도메인은 host-only 권장
+        }
+    }
+    fun createAccessTokenCookie(req: HttpServletRequest, accessToken: String, maxAge: Long = ACCESS_TOKEN_EXPIRY): ResponseCookie {
+        val domain = resolveCookieDomain(req)
+        val b = ResponseCookie.from("accessToken", accessToken)
             .httpOnly(true)
             .secure(true)
             .path("/")
-            .maxAge(maxAge)
             .sameSite("None")
-            .domain(aDomain)
-            .build()
+            .maxAge(maxAge)
+        if (domain != null) b.domain(domain)
+        return b.build()
+    }
+
+    fun createRefreshTokenCookie(req: HttpServletRequest, refreshToken: String, maxAge: Long = REFRESH_TOKEN_EXPIRY): ResponseCookie {
+        val domain = resolveCookieDomain(req)
+        val b = ResponseCookie.from("refreshToken", refreshToken)
+            .httpOnly(true)
+            .secure(true)
+            .path("/")
+            .sameSite("None")
+            .maxAge(maxAge)
+        if (domain != null) b.domain(domain)
+        return b.build()
+    }
 }

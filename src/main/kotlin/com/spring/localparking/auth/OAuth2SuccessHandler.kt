@@ -47,8 +47,8 @@ class OAuth2SuccessHandler(
 
         tokenService.saveRefreshToken(userId, refreshToken)
 
-        res.addHeader("Set-Cookie", CookieUtil.createAccessTokenCookie(accessToken).toString())
-        res.addHeader("Set-Cookie", CookieUtil.createRefreshTokenCookie(refreshToken).toString())
+        res.addHeader("Set-Cookie", CookieUtil.createAccessTokenCookie(req, accessToken).toString())
+        res.addHeader("Set-Cookie", CookieUtil.createRefreshTokenCookie(req, refreshToken).toString())
 
         clearAuthenticationAttributes(req)
         cookieAuthorizationRequestRepository.removeAuthorizationRequestCookies(req, res)

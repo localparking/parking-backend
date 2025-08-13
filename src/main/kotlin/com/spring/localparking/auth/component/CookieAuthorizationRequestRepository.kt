@@ -20,6 +20,21 @@ class CookieAuthorizationRequestRepository : AuthorizationRequestRepository<OAut
 
     private val cookieExpireSeconds = 180
 
+    private fun getCookieDomain(request: HttpServletRequest): String? {
+        val rawHost = request.getHeader("X-Forwarded-Host")?.split(",")?.first()?.trim()
+            ?: request.serverName
+        val host = rawHost.substringBefore(":")
+        val isIp = Regex("""^\d{1,3}(\.\d{1,3}){3}$""").matches(host)
+
+        if (host.equals("localhost", true) || isIp) return null
+
+        return when {
+            host == "townparking.store" -> "townparking.store"
+            host.endsWith(".townparking.store") -> "townparking.store"
+            else -> null // 그 외는 host-only 권장
+        }
+    }
+
     override fun loadAuthorizationRequest(request: HttpServletRequest): OAuth2AuthorizationRequest? {
         return getCookie(request, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME)
             ?.let { deserialize(it.value, OAuth2AuthorizationRequest::class.java) }
@@ -62,30 +77,29 @@ class CookieAuthorizationRequestRepository : AuthorizationRequestRepository<OAut
         deleteCookie(request, response, REDIRECT_URI_PARAM_COOKIE_NAME, cookieDomain)
     }
 
-    private fun getCookieDomain(request: HttpServletRequest): String? {
-        val origin = request.getHeader("Origin") ?: request.serverName
-        return if (origin.contains("localhost")) null else ".townparking.store"
-    }
-
     private fun getCookie(request: HttpServletRequest, name: String) =
         request.cookies?.find { it.name == name }
 
     private fun addCookie(response: HttpServletResponse, name: String, value: String, maxAge: Int) {
-        val cookie = Cookie(name, value)
-        cookie.path = "/"
-        cookie.isHttpOnly = true
-        cookie.maxAge = maxAge
+        val cookie = Cookie(name, value).apply {
+            path = "/"
+            isHttpOnly = true
+            secure = true
+            this.maxAge = maxAge
+        }
         response.addCookie(cookie)
     }
 
-    private fun deleteCookie(request: HttpServletRequest, response: HttpServletResponse, name: String, domain: String?) {
-        request.cookies?.filter { it.name == name }?.forEach {
-            it.value = ""
-            it.path = "/"
-            it.maxAge = 0
-            domain?.let { cookieDomain -> it.domain = cookieDomain }
-            response.addCookie(it)
+
+    private fun deleteCookie(request: HttpServletRequest, response: HttpServletResponse, name: String, domain: String?)  {
+        val del = Cookie(name, "").apply {
+            path = "/"
+            isHttpOnly = true
+            secure = true
+            maxAge = 0
+            if (!domain.isNullOrBlank()) this.domain = domain
         }
+        response.addCookie(del)
     }
 
     private fun serialize(obj: Any): String {
