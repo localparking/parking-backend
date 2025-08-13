@@ -1,5 +1,6 @@
 package com.spring.localparking.s3.service
 
+import com.spring.localparking.s3.dto.PresignedUrlResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
@@ -16,7 +17,7 @@ class S3PresignedUrlService(
 
     private val PRODUCT_IMAGE_DIR = "products"
 
-    fun getPresignedUrl(originalFilename: String): Map<String, String> {
+    fun getPresignedUrl(originalFilename: String): PresignedUrlResponse {
         val objectKey = "$PRODUCT_IMAGE_DIR/${UUID.randomUUID()}_$originalFilename"
 
         val putObjectRequest = PutObjectRequest.builder()
@@ -28,10 +29,9 @@ class S3PresignedUrlService(
             it.signatureDuration(Duration.ofMinutes(10))
             it.putObjectRequest(putObjectRequest)
         }
-
-        return mapOf(
-            "presignedUrl" to presignedRequest.url().toString(),
-            "imageKey" to objectKey
+        return PresignedUrlResponse(
+            presignedUrl = presignedRequest.url().toString(),
+            imageKey = objectKey
         )
     }
 }

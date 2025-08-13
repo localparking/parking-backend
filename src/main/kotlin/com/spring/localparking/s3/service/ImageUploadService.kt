@@ -1,15 +1,10 @@
 package com.spring.localparking.s3.service
 
-import com.spring.global.exception.ErrorCode
-import com.spring.localparking.global.exception.CustomException
 import io.awspring.cloud.s3.S3Template
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import org.springframework.web.multipart.MultipartFile
-import java.io.IOException
 import java.net.URL
-import java.util.*
 
 @Service
 class ImageUploadService(

@@ -23,10 +23,10 @@ class StoreController(
         val detail = storeService.getDetail(storeId)
         return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, detail))
     }
-    @Operation(summary = "가게 상품 목록 조회", description = "특정 가게에 등록된 상품 목록을 조회합니다.")
+    @Operation(summary = "가게 상품 주문 폼 조회", description = "특정 가게에 대한 상품 주문 폼을 조회하는 API입니다.")
     @GetMapping("/{storeId}/products")
-    fun getStoreProducts(@PathVariable storeId: Long): ResponseEntity<ResponseDto<List<ProductResponseDto>>> {
-        val products = storeService.getProductsByStore(storeId)
-        return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, products))
+    fun getStoreProducts(@PathVariable storeId: Long): ResponseEntity<ResponseDto<OrderFormResponseDto>> {
+        val results = storeService.getOrderForm(storeId)
+        return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, results))
     }
 }

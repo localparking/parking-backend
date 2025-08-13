@@ -4,5 +4,5 @@ import com.spring.localparking.storekeeper.domain.StoreParkingBenefit
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface StoreParkingBenefitRepository : JpaRepository<StoreParkingBenefit, Long>{
-    fun countByStoreId(storeId: Long): Long
+    fun findByStoreId(storeId: Long): List<StoreParkingBenefit>
 }

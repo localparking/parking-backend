@@ -9,7 +9,9 @@ import com.spring.localparking.store.domain.Store
 import com.spring.localparking.store.dto.*
 import com.spring.localparking.store.repository.ProductRepository
 import com.spring.localparking.store.repository.StoreRepository
+import com.spring.localparking.storekeeper.dto.ParkingBenefitDto
 import com.spring.localparking.storekeeper.dto.ProductResponseDto
+import com.spring.localparking.storekeeper.repository.StoreParkingBenefitRepository
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -18,7 +20,8 @@ import java.time.LocalDateTime
 class StoreService(
     private val storeRepository: StoreRepository,
     private val redisTemplate: RedisTemplate<String, String>,
-    private val productRepository: ProductRepository
+    private val productRepository: ProductRepository,
+    private val storeParkingBenefitRepository: StoreParkingBenefitRepository
 ) {
     fun getDetail(storeId: Long): StoreDetailResponse {
         val store: Store = storeRepository.findWithParkingLotsById(storeId)
@@ -75,11 +78,16 @@ class StoreService(
         }
     }
 
-    fun getProductsByStore(storeId: Long): List<ProductResponseDto> {
-        if (!storeRepository.existsById(storeId)) {
-            throw CustomException(ErrorCode.STORE_NOT_FOUND)
-        }
+    fun getOrderForm(storeId: Long): OrderFormResponseDto {
+        val store = storeRepository.findById(storeId)
+            .orElseThrow { CustomException(ErrorCode.STORE_NOT_FOUND) }
+        val benefits = storeParkingBenefitRepository.findByStoreId(storeId)
         val products = productRepository.findByStoreId(storeId)
-        return products.map { product -> ProductResponseDto.from(product) }
+        return OrderFormResponseDto(
+            storeId = store.id,
+            storeName = store.name,
+            benefits = benefits.map { ParkingBenefitDto.from(it) },
+            products = products.map { ProductResponseDto.from(it) }
+        )
     }
 }
