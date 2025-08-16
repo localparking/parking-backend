@@ -47,6 +47,7 @@ open class RegisterService (
             throw CustomException(ErrorCode.ALREADY_REGISTERED)
         }
         termService.processAgreements(user, request)
+        user.associateProfile()
         user.updateRole()
     }
 
