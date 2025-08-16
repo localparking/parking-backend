@@ -7,16 +7,12 @@ data class MyInfoUpdateRequestDto(
     @field:NotBlank
     val nickname: String,
 
-    @field:NotBlank
     val name: String,
 
-    @field:NotBlank
     val tel: String,
 
-    @field:NotBlank
     val regionName: String,
 
-    @field:NotBlank
     val vehicleNumber: String,
 
     @field:NotNull
