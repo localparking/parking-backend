@@ -7,7 +7,7 @@ import jakarta.persistence.*
 import java.time.LocalDateTime
 
 @Entity
-@Table(name="user",
+@Table(name="users",
     uniqueConstraints = [UniqueConstraint(columnNames = ["provider", "providerId"])]
 )
 class User protected constructor(
@@ -28,10 +28,13 @@ class User protected constructor(
     var ageGroup: Age? = null,
     @Enumerated(EnumType.STRING)
     var weight: Weight? = null,
-    var createdAt: LocalDateTime = LocalDateTime.now(),
+    var createdAt: LocalDateTime? = null,
     var withdrawnAt: LocalDateTime? = null,
     @Enumerated(EnumType.STRING)
     var registrationStatus: RequestStatus = RequestStatus.PENDING,
+
+    @OneToOne(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
+    var userProfile: UserProfile? = null,
 
     @OneToMany(
         mappedBy = "user",
@@ -50,6 +53,10 @@ class User protected constructor(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long?= null
         protected set
+
+    fun associateProfile() {
+        this.userProfile = UserProfile(user = this)
+    }
 
     companion object {
         fun ofProvider(
@@ -91,5 +98,9 @@ class User protected constructor(
     fun withdraw() {
         this.role = Role.WITHDRAWN
         this.withdrawnAt = LocalDateTime.now()
+    }
+    fun updateMyInfo(nickname: String, isNotification: Boolean) {
+        this.nickname = nickname
+        this.isNotification = isNotification
     }
 }

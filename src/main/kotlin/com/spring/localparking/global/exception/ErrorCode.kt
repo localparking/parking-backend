@@ -23,6 +23,7 @@ enum class ErrorCode(
     // USER
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."),
     ALREADY_REGISTERED(HttpStatus.BAD_REQUEST, "이미 가입된 사용자입니다."),
+    USER_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자 프로필입니다."),
 
     //TERM
     TERM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 약관입니다."),
@@ -68,6 +69,11 @@ enum class ErrorCode(
 
     //FILE
     FILE_NOT_FOUND(HttpStatus.BAD_REQUEST, "파일이 존재하지 않습니다."),
+
+    //ORDER
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다."),
+    PRICE_MISMATCH(HttpStatus.BAD_REQUEST, "주문 금액이 일치하지 않습니다."),
+    PRODUCT_NOT_IN_STORE(HttpStatus.BAD_REQUEST, "해당 가게에 없는 상품입니다."),
 
 
 }

@@ -3,8 +3,6 @@ package com.spring.localparking.auth.service
 import com.spring.global.exception.ErrorCode
 import com.spring.localparking.auth.dto.OnboardingRequest
 import com.spring.localparking.auth.dto.join.RegisterRequest
-import com.spring.localparking.auth.dto.join.TermDto
-import com.spring.localparking.auth.dto.join.TermsResponse
 import com.spring.localparking.global.dto.Age
 import com.spring.localparking.global.dto.Role
 import com.spring.localparking.global.dto.Weight
@@ -17,29 +15,14 @@ import com.spring.localparking.user.repository.UserCategoryRepository
 import com.spring.localparking.user.repository.UserRepository
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
 
 @Service
 open class RegisterService (
-    private val termRepository: TermRepository,
     private val userRepository: UserRepository,
     private val categoryRepository: CategoryRepository,
     private val userCategoryRepository: UserCategoryRepository,
     private val termService: TermService
 ){
-    fun getTerms(): TermsResponse {
-        val terms = termRepository.findAll()
-        return TermsResponse(terms.map {
-            TermDto(
-                termId = it.id!!,
-                version = it.version,
-                title = it.title,
-                content = it.content,
-                mandatory = it.mandatory,
-                effectiveDate = it.effectiveDate
-            )
-        })
-    }
     @Transactional
     fun registerAgreements(userId: Long, request: RegisterRequest) {
         val user = userRepository.findById(userId).orElseThrow { UserNotFoundException() }
@@ -47,6 +30,7 @@ open class RegisterService (
             throw CustomException(ErrorCode.ALREADY_REGISTERED)
         }
         termService.processAgreements(user, request)
+        user.associateProfile()
         user.updateRole()
     }
 

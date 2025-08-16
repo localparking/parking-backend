@@ -6,6 +6,7 @@ import com.spring.localparking.auth.dto.join.TermDto
 import com.spring.localparking.auth.dto.join.TermsResponse
 import com.spring.localparking.global.exception.CustomException
 import com.spring.localparking.user.domain.TermAgreement
+import com.spring.localparking.user.domain.User
 import com.spring.localparking.user.repository.TermAgreementRepository
 import com.spring.localparking.user.repository.TermRepository
 import org.springframework.stereotype.Service
@@ -61,5 +62,29 @@ class TermService(
             )
             termAgreementRepository.save(termAgreement)
         }
+    }
+    @Transactional
+    fun updateMarketingAgreement(user: User, isAgreed: Boolean) {
+        val marketingTerm = termRepository.findByTermType("MARKETING_OPT_IN")
+            ?: throw CustomException(ErrorCode.TERM_NOT_FOUND)
+        var agreement = termAgreementRepository.findByUserAndTerm(user, marketingTerm)
+        if (agreement == null) {
+            agreement = TermAgreement(
+                user = user,
+                term = marketingTerm,
+                agreed = isAgreed,
+                agreedAt = if (isAgreed) LocalDateTime.now() else null,
+                withdrawnAt = if (!isAgreed) LocalDateTime.now() else null
+            )
+        } else {
+            agreement.agreed = isAgreed
+            if (isAgreed) {
+                agreement.agreedAt = LocalDateTime.now()
+                agreement.withdrawnAt = null
+            } else {
+                agreement.withdrawnAt = LocalDateTime.now()
+            }
+        }
+        termAgreementRepository.save(agreement)
     }
 }
