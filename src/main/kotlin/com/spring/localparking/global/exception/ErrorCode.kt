@@ -23,6 +23,7 @@ enum class ErrorCode(
     // USER
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."),
     ALREADY_REGISTERED(HttpStatus.BAD_REQUEST, "이미 가입된 사용자입니다."),
+    USER_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 사용자 프로필입니다."),
 
     //TERM
     TERM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 약관입니다."),

@@ -55,7 +55,7 @@ class User protected constructor(
         protected set
 
     fun associateProfile() {
-        this.userProfile = UserProfile(userId = this.id!!, user = this)
+        this.userProfile = UserProfile(user = this)
     }
 
     companion object {
@@ -98,5 +98,9 @@ class User protected constructor(
     fun withdraw() {
         this.role = Role.WITHDRAWN
         this.withdrawnAt = LocalDateTime.now()
+    }
+    fun updateMyInfo(nickname: String, isNotification: Boolean) {
+        this.nickname = nickname
+        this.isNotification = isNotification
     }
 }

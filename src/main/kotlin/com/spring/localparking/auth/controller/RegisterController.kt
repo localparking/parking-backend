@@ -5,6 +5,7 @@ import com.spring.localparking.auth.dto.join.TermsResponse
 import com.spring.localparking.auth.exception.UnauthorizedException
 import com.spring.localparking.auth.security.CustomPrincipal
 import com.spring.localparking.auth.service.RegisterService
+import com.spring.localparking.auth.service.TermService
 import com.spring.localparking.global.response.ResponseDto
 import com.spring.localparking.global.response.SuccessCode
 import io.swagger.v3.oas.annotations.Operation
@@ -18,12 +19,13 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/register")
 class RegisterController (
-    private val registerService: RegisterService
+    private val registerService: RegisterService,
+    private val termService: TermService
 ){
     @Operation(summary = "약관 조회", description = "회원가입 시 약관을 조회하는 API입니다.")
     @GetMapping("/terms")
     fun getTerms(@AuthenticationPrincipal principal: CustomPrincipal): ResponseEntity<ResponseDto<TermsResponse>> {
-        val response = registerService.getTerms()
+        val response = termService.getTerms()
         return ResponseEntity.ok(
             ResponseDto.from(
             SuccessCode.OK, response)

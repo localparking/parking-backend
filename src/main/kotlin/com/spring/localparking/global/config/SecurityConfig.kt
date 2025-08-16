@@ -55,6 +55,7 @@ class SecurityConfig(
                 ).permitAll()
                     .requestMatchers("/admin/**").hasRole("ADMIN")
                     .requestMatchers("/storekeeper/**").hasRole("STOREKEEPER")
+                    .requestMatchers("/order/**").hasRole("USER")
                     .anyRequest().authenticated()
             }
             .oauth2Login {
