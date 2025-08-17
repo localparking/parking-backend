@@ -32,11 +32,17 @@ data class OrderResponseDto(
             val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
             val primaryParkingLot = order.store.storeParkingLots.firstOrNull()?.parkingLot
 
+            fun formatClosingTime(time: LocalTime?): String? {
+                return when {
+                    time != null && (time == LocalTime.MAX || (time.hour == 23 && time.minute == 59)) -> "24:00"
+                    else -> time?.format(timeFormatter)
+                }
+            }
             val storeInfo = StoreInfoInOrderDto(
                 storeId = order.store.id,
                 storeName = order.store.name,
                 storeAddress = order.store.location.doroAddress?.fullAddress ?: order.store.location.jibeonAddress?.fullAddress,
-                storeTodayClosingTime = order.store.operatingHour?.openStatus(now)?.second?.format(timeFormatter)
+                storeTodayClosingTime = formatClosingTime(order.store.operatingHour?.openStatus(now)?.second)
             )
 
             val parkingLotInfo = primaryParkingLot?.let {
@@ -44,9 +50,7 @@ data class OrderResponseDto(
                     parkingLotId = it.parkingCode,
                     parkingLotName = it.name,
                     parkingLotAddress = it.address,
-                    parkingLotTodayClosingTime = it.operatingHour?.openStatus(now)?.second?.let { time ->
-                        if (time == LocalTime.MAX || time == LocalTime.of(23, 59)) "24:00" else time.format(timeFormatter)
-                    }
+                    parkingLotTodayClosingTime = formatClosingTime(it.operatingHour?.openStatus(now)?.second)
                 )
             }
 

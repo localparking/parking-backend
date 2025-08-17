@@ -8,6 +8,7 @@ import com.spring.localparking.operatingHour.domain.OperatingHour
 import com.spring.localparking.parking.domain.openStatus
 import com.spring.localparking.store.domain.Store
 import com.spring.localparking.storekeeper.dto.ParkingBenefitDto
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 
@@ -31,7 +32,10 @@ data class StoreDetailResponse (
         fun from(entity: Store, associatedParkingLots: List<AssociatedParkingLotDto>): StoreDetailResponse {
             val op: OperatingHour? = entity.operatingHour
             val (open, closingLocalTime) = op?.openStatus() ?: (null to null)
-            val closingStr = closingLocalTime?.format(TIME_FMT)
+            val closingStr = when {
+                closingLocalTime != null && (closingLocalTime == LocalTime.MAX || (closingLocalTime.hour == 23 && closingLocalTime.minute == 59)) -> "24:00"
+                else -> closingLocalTime?.format(TIME_FMT)
+            }
 
             val categoryInfoList = entity.categories.map { storeCategory ->
                 CategoryDto(
@@ -57,7 +61,7 @@ data class StoreDetailResponse (
                 lon = loc.lon,
                 operatingTable = OperatingHourPresenter.build(op),
                 associatedParkingLots = associatedParkingLots,
-                parkingBenefits = entity.parkingBenefits.map { ParkingBenefitDto.from(it)}
+                parkingBenefits = entity.parkingBenefits.map { ParkingBenefitDto.from(it)}.sortedBy { it.purchaseAmount }
             )
         }
     }

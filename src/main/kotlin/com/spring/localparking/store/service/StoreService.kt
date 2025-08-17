@@ -86,7 +86,7 @@ class StoreService(
         return OrderFormResponseDto(
             storeId = store.id,
             storeName = store.name,
-            benefits = benefits.map { ParkingBenefitDto.from(it) },
+            benefits = benefits.map { ParkingBenefitDto.from(it) }.sortedBy { it.purchaseAmount },
             products = products.map { ProductResponseDto.from(it) }
         )
     }
