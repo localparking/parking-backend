@@ -6,17 +6,14 @@ import com.spring.localparking.global.response.ResponseDto
 import com.spring.localparking.global.response.SuccessCode
 import com.spring.localparking.order.dto.OrderRequestDto
 import com.spring.localparking.order.dto.OrderResponseDto
+import com.spring.localparking.order.dto.PaymentWidgetInfoResponseDto
 import com.spring.localparking.order.service.OrderService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @Tag(name = "주문 컨트롤러", description = "주문 관련 API입니다.")
 @RestController
@@ -30,9 +27,20 @@ class OrderController (
         @AuthenticationPrincipal principal: CustomPrincipal,
         @PathVariable storeId: Long,
         @Valid @RequestBody req : OrderRequestDto
-    ): ResponseEntity<ResponseDto<OrderResponseDto>> {
+    ): ResponseEntity<ResponseDto<PaymentWidgetInfoResponseDto>> {
         val userId = principal.id ?: throw UnauthorizedException()
         val result = orderService.placeOrder(userId, storeId, req)
+        return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, result))
+    }
+
+    @Operation(summary = "결제 성공 후처리", description = "프론트에서 결제 성공 후 호출되어 최종 결제 승인을 진행합니다.")
+    @GetMapping("/success")
+    fun handlePaymentSuccess(
+        @RequestParam paymentKey: String,
+        @RequestParam orderId: String,
+        @RequestParam amount: Int
+    ): ResponseEntity<ResponseDto<OrderResponseDto>> {
+        val result = orderService.confirmPayment(paymentKey, orderId, amount)
         return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, result))
     }
 }

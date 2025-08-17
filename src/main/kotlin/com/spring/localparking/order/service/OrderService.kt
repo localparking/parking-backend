@@ -1,6 +1,7 @@
 package com.spring.localparking.order.service
 
 import com.spring.global.exception.ErrorCode
+import com.spring.localparking.global.dto.OrderStatus
 import com.spring.localparking.global.exception.CustomException
 import com.spring.localparking.order.domain.Order
 import com.spring.localparking.order.domain.OrderItem
@@ -11,8 +12,13 @@ import com.spring.localparking.store.repository.ProductRepository
 import com.spring.localparking.store.repository.StoreRepository
 import com.spring.localparking.storekeeper.domain.StoreParkingBenefit
 import com.spring.localparking.user.repository.UserRepository
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.reactive.function.client.WebClient
+import java.nio.charset.StandardCharsets
+import java.util.*
 import kotlin.math.ceil
 
 @Service
@@ -20,10 +26,14 @@ class OrderService (
     private val orderRepository: OrderRepository,
     private val userRepository: UserRepository,
     private val storeRepository: StoreRepository,
-    private val productRepository: ProductRepository
+    private val productRepository: ProductRepository,
+    private val webClient: WebClient,
+
+    @Value("\${payments.toss.secret-key}") private val secretKey: String
+
 ){
     @Transactional
-    fun placeOrder(userId: Long, storeId: Long, request: OrderRequestDto): OrderResponseDto {
+    fun placeOrder(userId: Long, storeId: Long, request: OrderRequestDto): PaymentWidgetInfoResponseDto {
         val user = userRepository.findById(userId)
             .orElseThrow { CustomException(ErrorCode.USER_NOT_FOUND) }
         val store = storeRepository.findById(storeId)
@@ -58,7 +68,8 @@ class OrderService (
             totalPrice = serverTotalPrice,
             totalDiscount = totalDiscount,
             parkingFeeDiscount = parkingFeeDiscount,
-            parkingDiscountMin = parkingDiscountMin
+            parkingDiscountMin = parkingDiscountMin,
+            status = OrderStatus.PENDING
         )
         request.orderItems.forEach { itemDto ->
             val product = products[itemDto.productId]!!
@@ -71,7 +82,7 @@ class OrderService (
             order.orderItems.add(orderItem)
         }
         val savedOrder = orderRepository.save(order)
-        return OrderResponseDto.from(savedOrder)
+        return PaymentWidgetInfoResponseDto.from(savedOrder)
     }
     private fun calculateParkingDiscount(benefits: List<StoreParkingBenefit>, totalPrice: Int): Int {
         return benefits
@@ -95,5 +106,37 @@ class OrderService (
         }
 
         return totalFee
+    }
+
+    @Transactional
+    fun confirmPayment(paymentKey: String, orderId: String, amount: Int): OrderResponseDto {
+        val order = orderRepository.findById(UUID.fromString(orderId))
+            .orElseThrow { CustomException(ErrorCode.ORDER_NOT_FOUND) }
+        if (order.totalPrice != amount) {
+            throw CustomException(ErrorCode.PRICE_MISMATCH)
+        }
+        val encodedSecretKey = Base64.getEncoder().encodeToString((secretKey + ":").toByteArray(StandardCharsets.UTF_8))
+        val response = webClient
+            .mutate()
+            .baseUrl("https://api.tosspayments.com")
+            .build()
+            .post()
+            .uri("/v1/payments/confirm")
+            .header("Authorization", "Basic $encodedSecretKey")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(mapOf("paymentKey" to paymentKey, "orderId" to orderId, "amount" to amount))
+            .retrieve()
+            .bodyToMono(Map::class.java)
+            .block()
+        if (response != null && response["status"] == "DONE") {
+            order.status = OrderStatus.PAID
+            order.paymentKey = paymentKey
+            val savedOrder = orderRepository.save(order)
+            return OrderResponseDto.from(savedOrder)
+        } else {
+            order.status = OrderStatus.FAILED
+            orderRepository.save(order)
+            throw CustomException(ErrorCode.PAYMENT_FAILED)
+        }
     }
 }

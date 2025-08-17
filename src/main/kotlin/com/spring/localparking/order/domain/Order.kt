@@ -1,5 +1,6 @@
 package com.spring.localparking.order.domain
 
+import com.spring.localparking.global.dto.OrderStatus
 import com.spring.localparking.store.domain.Store
 import com.spring.localparking.user.domain.User
 import jakarta.persistence.*
@@ -50,6 +51,12 @@ class Order (
 
     @Column(nullable = false)
     val parkingDiscountMin: Int = 0,
+
+    var paymentKey: String? = null,
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    var status: OrderStatus = OrderStatus.PENDING,
 
     @Column(nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now()
