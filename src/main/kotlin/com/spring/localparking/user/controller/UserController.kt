@@ -5,10 +5,7 @@ import com.spring.localparking.auth.security.CustomPrincipal
 import com.spring.localparking.global.response.ResponseDto
 import com.spring.localparking.global.response.SuccessCode
 import com.spring.localparking.global.util.CookieUtil
-import com.spring.localparking.user.dto.MyInfoResponseDto
-import com.spring.localparking.user.dto.MyInfoUpdateRequestDto
-import com.spring.localparking.user.dto.VisitorInfo
-import com.spring.localparking.user.repository.UserRepository
+import com.spring.localparking.user.dto.*
 import com.spring.localparking.user.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -63,18 +60,19 @@ class UserController (
         )
     }
 
-    @Operation(summary = "내 방문자 정보 수정", description = "로그인된 사용자의 방문자 정보를 수정합니다.")
-    @PutMapping("/visitor-info")
-    fun updateMyVisitorInfo(
+    @Operation(summary = "방문자 정보 부분 수정", description = "로그인된 사용자의 방문자 정보 중 원하는 값만 수정합니다.")
+    @PatchMapping
+    fun patchMyProfile(
         @AuthenticationPrincipal principal: CustomPrincipal,
-        @Valid @RequestBody visitorInfo: VisitorInfo
+        @Valid @RequestBody request: VisitorInfo
     ): ResponseEntity<ResponseDto<VisitorInfo>> {
-        val userId = principal?.id ?: throw UnauthorizedException()
-        val updatedVisitorInfo = userService.updateVisitorInfo(userId, visitorInfo)
+        val userId = principal.id ?: throw UnauthorizedException()
+        val updatedProfile = userService.patchUserProfile(userId, request)
         return ResponseEntity.ok(
-            ResponseDto.from(SuccessCode.OK, updatedVisitorInfo)
+            ResponseDto.from(SuccessCode.OK, updatedProfile)
         )
     }
+
 
     @Operation(summary = "회원 탈퇴", description = "로그인된 사용자의 계정을 탈퇴 처리합니다.")
     @PostMapping("/withdraw")
