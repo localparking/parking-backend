@@ -18,10 +18,16 @@ class UserProfile(
     var regionName: String? = null
     var vehicleNumber: String? = null
 
-    fun updateVisitorInfo(name: String?, tel: String?, regionName: String?, vehicleNumber: String?) {
-        this.name = name
-        this.tel = tel
-        this.regionName = regionName
-        this.vehicleNumber = vehicleNumber
+    fun update(
+        name: String?,
+        tel: String?,
+        regionName: String?,
+        vehicleNumber: String?
+    ) {
+        this.name = name?: this.name
+        this.tel = tel?: this.tel
+        this.regionName = regionName?: this.regionName
+        this.vehicleNumber = vehicleNumber?: this.vehicleNumber
     }
+
 }

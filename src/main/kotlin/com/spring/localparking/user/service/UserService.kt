@@ -4,9 +4,7 @@ import com.spring.global.exception.ErrorCode
 import com.spring.localparking.auth.service.TermService
 import com.spring.localparking.auth.service.TokenService
 import com.spring.localparking.global.exception.CustomException
-import com.spring.localparking.user.dto.MyInfoResponseDto
-import com.spring.localparking.user.dto.MyInfoUpdateRequestDto
-import com.spring.localparking.user.dto.VisitorInfo
+import com.spring.localparking.user.dto.*
 import com.spring.localparking.user.exception.UserNotFoundException
 import com.spring.localparking.user.repository.UserRepository
 import jakarta.transaction.Transactional
@@ -36,17 +34,16 @@ class UserService (
         return VisitorInfo.from(userProfile)
     }
     @Transactional
-    fun updateVisitorInfo(userId: Long, visitorInfo: VisitorInfo):VisitorInfo {
+    fun patchUserProfile(userId: Long, request: VisitorInfo): VisitorInfo {
         val user = userRepository.findById(userId)
             .orElseThrow { UserNotFoundException() }
         val userProfile = user.userProfile
             ?: throw CustomException(ErrorCode.USER_PROFILE_NOT_FOUND)
-        userProfile.updateVisitorInfo(
-            name = visitorInfo.name,
-            tel = visitorInfo.tel,
-            regionName = visitorInfo.regionName,
-            vehicleNumber = visitorInfo.vehicleNumber
-        )
+        userProfile.update(
+            name = request.name,
+            tel = request.tel,
+            regionName = request.regionName,
+            vehicleNumber = request.vehicleNumber)
         return VisitorInfo.from(userProfile)
     }
     @Transactional(Transactional.TxType.SUPPORTS)
@@ -66,7 +63,7 @@ class UserService (
             isNotification = request.isNotification
         )
         termService.updateMarketingAgreement(user, request.isNotification)
-        userProfile.updateVisitorInfo(
+        userProfile.update(
             name = request.name,
             tel = request.tel,
             regionName = request.regionName,
