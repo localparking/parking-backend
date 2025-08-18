@@ -15,7 +15,7 @@ data class ProductResponseDto(
     val imageUrl: String,
 
     @Schema(description = "상품 설명")
-    val description: String,
+    val description: String?,
 
     @Schema(description = "상품 가격")
     val price: Int
