@@ -14,6 +14,7 @@ import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
+import java.util.*
 
 @Tag(name = "주문 컨트롤러", description = "주문 관련 API입니다.")
 @RestController
@@ -39,8 +40,19 @@ class OrderController (
         @RequestParam paymentKey: String,
         @RequestParam orderId: String,
         @RequestParam amount: Int
+    ): ResponseEntity<ResponseDto<Unit>> {
+        orderService.confirmPayment(paymentKey, orderId, amount)
+        return ResponseEntity.ok(ResponseDto.empty(SuccessCode.OK))
+    }
+
+    @Operation(summary = "결제 완료 건 상세 조회", description = "결제가 완료된 특정 주문 건의 상세 내역을 조회합니다.")
+    @GetMapping("/{orderId}")
+    fun getPaidOrderDetail(
+        @AuthenticationPrincipal principal: CustomPrincipal,
+        @PathVariable orderId: UUID
     ): ResponseEntity<ResponseDto<OrderResponseDto>> {
-        val result = orderService.confirmPayment(paymentKey, orderId, amount)
-        return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, result))
+        val userId = principal.id ?: throw UnauthorizedException()
+        val orderDetail = orderService.getPaidOrderDetail(userId, orderId)
+        return ResponseEntity.ok(ResponseDto.from(SuccessCode.OK, orderDetail))
     }
 }

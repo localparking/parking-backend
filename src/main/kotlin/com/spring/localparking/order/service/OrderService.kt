@@ -109,7 +109,7 @@ class OrderService (
     }
 
     @Transactional
-    fun confirmPayment(paymentKey: String, orderId: String, amount: Int): OrderResponseDto {
+    fun confirmPayment(paymentKey: String, orderId: String, amount: Int){
         val order = orderRepository.findById(UUID.fromString(orderId))
             .orElseThrow { CustomException(ErrorCode.ORDER_NOT_FOUND) }
         if (order.totalPrice != amount) {
@@ -131,12 +131,23 @@ class OrderService (
         if (response != null && response["status"] == "DONE") {
             order.status = OrderStatus.PAID
             order.paymentKey = paymentKey
-            val savedOrder = orderRepository.save(order)
-            return OrderResponseDto.from(savedOrder)
+            orderRepository.save(order)
         } else {
             order.status = OrderStatus.FAILED
             orderRepository.save(order)
             throw CustomException(ErrorCode.PAYMENT_FAILED)
         }
+    }
+    @Transactional(readOnly = true)
+    fun getPaidOrderDetail(userId: Long, orderId: UUID): OrderResponseDto {
+        val order = orderRepository.findById(orderId)
+            .orElseThrow { CustomException(ErrorCode.ORDER_NOT_FOUND) }
+        if (order.user.id != userId) {
+            throw CustomException(ErrorCode.ACCESS_DENIED)
+        }
+        if (order.status != OrderStatus.PAID) {
+            throw CustomException(ErrorCode.NOT_YET_PAID)
+        }
+        return OrderResponseDto.from(order)
     }
 }

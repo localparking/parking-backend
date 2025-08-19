@@ -75,4 +75,5 @@ enum class ErrorCode(
     PRICE_MISMATCH(HttpStatus.BAD_REQUEST, "주문 금액이 일치하지 않습니다."),
     PRODUCT_NOT_IN_STORE(HttpStatus.BAD_REQUEST, "해당 가게에 없는 상품입니다."),
     PAYMENT_FAILED(HttpStatus.BAD_REQUEST, "결제에 실패했습니다."),
+    NOT_YET_PAID(HttpStatus.BAD_REQUEST, "아직 결제되지 않은 주문입니다."),
 }
