@@ -8,7 +8,7 @@ data class VisitorInfo (
     val name: String?,
     @Schema(description = "방문자 전화번호", example = "010-1234-5678")
     val tel: String?,
-    @Schema(description = "방문자 지역명", example = "서울시 강남구")
+    @Schema(description = "차량 지역명", example = "서울")
     val regionName: String?,
     @Schema(description = "방문자 차량번호", example = "12가 3456")
     val vehicleNumber: String?,

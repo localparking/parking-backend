@@ -1,6 +1,7 @@
 package com.spring.localparking.global.util
 
 import com.spring.localparking.parking.domain.FeePolicy
+import kotlin.math.ceil
 
 object FeeCalculationUtil {
     fun calculateHourlyFee(feePolicy: FeePolicy?): Int? {
@@ -19,5 +20,14 @@ object FeeCalculationUtil {
         val remaining = 60 - baseTime
         val chunks = (remaining + addTime - 1) / addTime
         return baseFee + chunks * addFee
+    }
+    fun calculateParkingFeeForDuration(durationMin: Long, feePolicy: FeePolicy?): Int {
+
+        if (durationMin <= 0 || feePolicy == null) return 0
+        val additionalTime = feePolicy.additionalTimeMin ?: return feePolicy.baseTimeMin
+        val additionalFee = feePolicy.additionalFee ?: return feePolicy.baseFee
+        val chunks = ceil(durationMin.toDouble() / additionalTime.toDouble()).toInt()
+
+        return chunks * additionalFee
     }
 }

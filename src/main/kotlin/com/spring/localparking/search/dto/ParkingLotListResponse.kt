@@ -20,29 +20,23 @@ data class ParkingLotListResponse(
     companion object {
         private fun calculateCurrentIsOpen(operatingHours: List<DocumentOperatingHour>): Boolean? {
             if (operatingHours.isEmpty()) return null
-
             val now = LocalDateTime.now()
             val today = now.dayOfWeek
             val yesterday = today.minus(1)
             val currentTimeInt = now.hour * 100 + now.minute
-
-            val isOpenNow = operatingHours.any { slot ->
+            return operatingHours.any { slot ->
                 val begin = slot.beginTime
                 val end = slot.endTime
-                if (begin == null || end == null) return@any false
-
-                when {
-                    slot.dayOfWeek == today && !slot.isOvernight ->
-                        currentTimeInt >= begin && currentTimeInt < end
-
-                    slot.dayOfWeek == today && slot.isOvernight ->
-                        currentTimeInt >= begin
-                    slot.dayOfWeek == yesterday && slot.isOvernight ->
-                        currentTimeInt < end
-                    else -> false
+                if (begin == null || end == null) {
+                    false
+                } else if (slot.dayOfWeek == today) {
+                    (!slot.isOvernight && currentTimeInt >= begin && currentTimeInt < end) || (slot.isOvernight && currentTimeInt >= begin)
+                } else if (slot.dayOfWeek == yesterday) {
+                    slot.isOvernight && currentTimeInt < end
+                } else {
+                    false
                 }
             }
-            return isOpenNow
         }
         fun of(doc: ParkingLotDocument, curCapacity: Int?): ParkingLotListResponse {
             return ParkingLotListResponse(

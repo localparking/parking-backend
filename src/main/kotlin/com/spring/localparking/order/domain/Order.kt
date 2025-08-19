@@ -59,6 +59,8 @@ class Order (
     var status: OrderStatus = OrderStatus.PENDING,
 
     @Column(nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now()
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+
+    var isDeparted: Boolean = false
 
 )

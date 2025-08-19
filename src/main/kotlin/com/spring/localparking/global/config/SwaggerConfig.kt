@@ -36,19 +36,7 @@ class SwaggerConfig {
             )
             .security(listOf(securityRequirement))
     }
-    @Bean
-    fun commonApi(): GroupedOpenApi {
-        return GroupedOpenApi.builder()
-            .group("common")
-            .displayName("일반")
-            .pathsToMatch(
-                "/store/**",
-                "/parking/**",
-                "/category/**",
-                "/text-search/**"
-            )
-            .build()
-    }
+
     @Bean
     fun userApi(): GroupedOpenApi {
         return GroupedOpenApi.builder()
@@ -59,7 +47,11 @@ class SwaggerConfig {
                 "/auth/**",
                 "/register/**",
                 "/onboarding/**",
-                "/order/**"
+                "/order/**",
+                "/store/**",
+                "/parking/**",
+                "/category/**",
+                "/text-search/**"
             )
             .build()
     }
