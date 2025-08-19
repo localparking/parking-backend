@@ -14,7 +14,6 @@ import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
-import java.util.*
 
 @Tag(name = "주문 컨트롤러", description = "주문 관련 API입니다.")
 @RestController
@@ -49,7 +48,7 @@ class OrderController (
     @GetMapping("/{orderId}")
     fun getPaidOrderDetail(
         @AuthenticationPrincipal principal: CustomPrincipal,
-        @PathVariable orderId: UUID
+        @PathVariable orderId: String
     ): ResponseEntity<ResponseDto<OrderResponseDto>> {
         val userId = principal.id ?: throw UnauthorizedException()
         val orderDetail = orderService.getPaidOrderDetail(userId, orderId)

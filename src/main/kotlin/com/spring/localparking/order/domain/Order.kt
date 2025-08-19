@@ -5,13 +5,13 @@ import com.spring.localparking.store.domain.Store
 import com.spring.localparking.user.domain.User
 import jakarta.persistence.*
 import java.time.LocalDateTime
-import java.util.UUID
 
 @Entity
 @Table(name = "orders")
 class Order (
-    @Id @GeneratedValue(strategy = GenerationType.UUID)
-    val id : UUID = UUID.randomUUID(),
+    @Id
+    @Column(name = "order_id")
+    var id : String  = "",
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -63,4 +63,12 @@ class Order (
 
     var isDeparted: Boolean = false
 
-)
+){
+    @PrePersist
+    fun createOrderId() {
+        val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        this.id = (1..10)
+            .map { chars.random() }
+            .joinToString("")
+    }
+}

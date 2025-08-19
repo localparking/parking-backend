@@ -61,7 +61,7 @@ class ParkingStatusService(
     }
 
     @Transactional
-    fun updateVisitTimeToNow(userId: Long, orderId: UUID) : ParkingStatusResponseDto{
+    fun updateVisitTimeToNow(userId: Long, orderId: String) : ParkingStatusResponseDto{
         val order = orderRepository.findById(orderId).orElseThrow { CustomException(ErrorCode.ORDER_NOT_FOUND) }
         if (order.user.id != userId) {
             throw CustomException(ErrorCode.ACCESS_DENIED)
@@ -72,7 +72,7 @@ class ParkingStatusService(
     }
 
     @Transactional
-    fun processDeparture(userId: Long, orderId: UUID) {
+    fun processDeparture(userId: Long, orderId: String) {
         val order = orderRepository.findById(orderId).orElseThrow { CustomException(ErrorCode.ORDER_NOT_FOUND) }
         if (order.user.id != userId) {
             throw CustomException(ErrorCode.ACCESS_DENIED)

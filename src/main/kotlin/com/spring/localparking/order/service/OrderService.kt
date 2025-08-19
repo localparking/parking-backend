@@ -110,7 +110,7 @@ class OrderService (
 
     @Transactional
     fun confirmPayment(paymentKey: String, orderId: String, amount: Int){
-        val order = orderRepository.findById(UUID.fromString(orderId))
+        val order = orderRepository.findById(orderId)
             .orElseThrow { CustomException(ErrorCode.ORDER_NOT_FOUND) }
         if (order.totalPrice != amount) {
             throw CustomException(ErrorCode.PRICE_MISMATCH)
@@ -139,7 +139,7 @@ class OrderService (
         }
     }
     @Transactional(readOnly = true)
-    fun getPaidOrderDetail(userId: Long, orderId: UUID): OrderResponseDto {
+    fun getPaidOrderDetail(userId: Long, orderId: String): OrderResponseDto {
         val order = orderRepository.findById(orderId)
             .orElseThrow { CustomException(ErrorCode.ORDER_NOT_FOUND) }
         if (order.user.id != userId) {

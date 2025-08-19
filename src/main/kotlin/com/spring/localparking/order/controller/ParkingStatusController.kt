@@ -33,7 +33,7 @@ class ParkingStatusController(
     @PostMapping("/{orderId}/arrival")
     fun updateVisitTimeToNow(
         @AuthenticationPrincipal principal: CustomPrincipal,
-        @PathVariable orderId: UUID
+        @PathVariable orderId: String
     ): ResponseEntity<ResponseDto<ParkingStatusResponseDto>> {
         val userId = principal.id ?: throw UnauthorizedException()
         val result = parkingStatusService.updateVisitTimeToNow(userId, orderId)
@@ -44,7 +44,7 @@ class ParkingStatusController(
     @PostMapping("/{orderId}/departure")
     fun processDeparture(
         @AuthenticationPrincipal principal: CustomPrincipal,
-        @PathVariable orderId: UUID
+        @PathVariable orderId: String
     ): ResponseEntity<ResponseDto<Unit>> {
         val userId = principal.id ?: throw UnauthorizedException()
         parkingStatusService.processDeparture(userId, orderId)

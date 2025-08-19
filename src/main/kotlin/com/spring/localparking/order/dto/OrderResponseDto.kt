@@ -1,13 +1,13 @@
 package com.spring.localparking.order.dto
 
+import com.spring.localparking.category.dto.CategoryDto
 import com.spring.localparking.order.domain.Order
 import com.spring.localparking.parking.domain.openStatus
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.util.UUID
 data class OrderResponseDto(
-    val orderId: UUID,
+    val orderId: String,
     val createdAt: LocalDateTime,
 
     val visitorName: String,
@@ -38,8 +38,17 @@ data class OrderResponseDto(
                     else -> time?.format(timeFormatter)
                 }
             }
+            val representativeCategory = order.store.categories.firstOrNull()?.category
+            val categoryDto = representativeCategory?.let {
+                CategoryDto(
+                    categoryId = it.id,
+                    categoryName = it.name,
+                    parentId = it.parent?.id
+                )
+            } ?: CategoryDto(-1, "미지정", null)
             val storeInfo = StoreInfoInOrderDto(
                 storeId = order.store.id,
+                categoryDto = categoryDto,
                 storeName = order.store.name,
                 storeAddress = order.store.location.doroAddress?.fullAddress ?: order.store.location.jibeonAddress?.fullAddress,
                 storeTodayClosingTime = formatClosingTime(order.store.operatingHour?.openStatus(now)?.second)
