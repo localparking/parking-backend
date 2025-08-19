@@ -6,7 +6,7 @@ import com.spring.localparking.operatingHour.domain.TimeSlot
 import java.time.*
 
 private fun TimeSlot.isValidSlot() = isValid()
-
+private val KST = ZoneId.of("Asia/Seoul")
 /**
  * 오늘(day) 24시간 여부.
  * - 유효 슬롯이 하나도 없으면 null
@@ -70,7 +70,7 @@ fun OperatingHour.normalizedSlots(): List<NormalizedSlot> =
  * - isOpen == null : 슬롯이 없거나 전부 invalid
  * - closingTime: 현재 열려 있으면 가장 늦은 end(LocalTime)
  */
-fun OperatingHour.openStatus(now: LocalDateTime = LocalDateTime.now()): Pair<Boolean?, LocalTime?> {
+fun OperatingHour.openStatus(now: LocalDateTime = LocalDateTime.now(KST)): Pair<Boolean?, LocalTime?> {
     if (timeSlots.isEmpty()) return null to null
 
     val validSlots = timeSlots.filter { it.isValidSlot() }
