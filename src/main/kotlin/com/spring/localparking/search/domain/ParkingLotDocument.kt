@@ -34,7 +34,7 @@ data class ParkingLotDocument(
     val isOpen: Boolean? = null,
 
     @Field(type = FieldType.Boolean)
-    val is24Hours: Boolean,
+    val is24Hours: Boolean? = false,
 
     @Field(type = FieldType.Keyword)
     val congestion: String? = null,
