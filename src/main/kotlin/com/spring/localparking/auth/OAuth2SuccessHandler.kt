@@ -22,7 +22,7 @@ class OAuth2SuccessHandler(
 
     private val allowedRedirectUris = setOf(
         "http://localhost:3001/login/success",
-        "https://townparking.store/login/success"
+        "https://dev.townparking.store/login/success"
     )
 
     @Throws(IOException::class)
