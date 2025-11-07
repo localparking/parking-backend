@@ -74,7 +74,7 @@ class OAuth2SuccessHandler(
         if (!redirectUri.isNullOrBlank() && isAuthorizedRedirectUri(redirectUri)) {
             return redirectUri
         }
-        return "https://townparking.store/login/success"
+        return "https://dev.townparking.store/login/success"
     }
 
     private fun isAuthorizedRedirectUri(uri: String): Boolean {
